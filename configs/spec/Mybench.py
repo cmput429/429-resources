@@ -2,7 +2,7 @@
 
 from m5.objects import Process
 
-base_dir = "/cshome/cmput429/cpu2006/"
+base_dir = "../cpu2006/"
 binary_dir = base_dir+"binaries/"
 data_dir = base_dir+"data/"
 
