@@ -1,0 +1,7 @@
+/* Generated automatically. */
+static const char configuration_arguments[] = "/cshome/tjlloyd/crosstool/.build/src/gcc-4.6.3/configure --build=x86_64-build_unknown-linux-gnu --host=x86_64-build_unknown-linux-gnu --target=arm-gem5-linux-gnueabi --prefix=/cshome/tjlloyd/x-tools/arm-gem5-linux-gnueabi --with-sysroot=/cshome/tjlloyd/x-tools/arm-gem5-linux-gnueabi/arm-gem5-linux-gnueabi/sysroot --enable-languages=c,c++,fortran --with-float=softfp --with-pkgversion='crosstool-NG 1.15.3' --enable-__cxa_atexit --disable-libmudflap --disable-libgomp --disable-libssp --with-gmp=/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools --with-mpfr=/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools --with-mpc=/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools --with-ppl=/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools --with-cloog=/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools --with-libelf=/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm -L/cshome/tjlloyd/crosstool/.build/arm-gem5-linux-gnueabi/buildtools/lib -lpwl' --enable-threads=posix --enable-target-optspace --disable-nls --disable-multilib --with-local-prefix=/cshome/tjlloyd/x-tools/arm-gem5-linux-gnueabi/arm-gem5-linux-gnueabi/sysroot --enable-c99 --enable-long-long";
+static const char thread_model[] = "posix";
+
+static const struct {
+  const char *name, *value;
+} configure_default_options[] = { { "float", "softfp" } };
