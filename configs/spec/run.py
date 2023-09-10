@@ -15,6 +15,8 @@ from Caches import *
 from cpu2000 import *
 from m5.objects.BranchPredictor import *
 import Mybench
+from common import ObjectList
+from common import CacheConfig
 # Get paths we might need.  It's expected this file is in m5/configs/example.
 config_path = os.path.dirname(os.path.abspath(__file__))
 config_root = os.path.dirname(config_path)+"/common"
@@ -113,7 +115,7 @@ options.l2cache = 1
 options.l2_size = "256kB"
 options.l2_assoc = 4
 
-options.bp_type = GlobalBP()
+options.bp_type = "GlobalBP"
 
 numThreads = 1
 
@@ -121,12 +123,13 @@ numThreads = 1
 
 CPUClass.numThreads = numThreads
 
-#np = options.num_cpus 
-np = 1
+np = options.num_cpus
+#np = 1
 
 system = System(cpu = [CPUClass(cpu_id=i) for i in range(np)],
                 physmem = SimpleMemory(range=AddrRange("512MB")),
-                membus = SystemXBar(), mem_mode = 'timing')
+                membus = SystemXBar(), mem_mode = test_mem_mode,
+                cache_line_size = options.cacheline_size)
 
 # Create a top-level voltage domain
 system.voltage_domain = VoltageDomain(voltage = options.sys_voltage)
@@ -153,21 +156,14 @@ system.system_port = system.membus.cpu_side_ports
 system.physmem.port = system.membus.mem_side_ports
 
 for i in range(np):   
-    if options.caches:
-        system.cpu[i].addPrivateSplitL1Caches(L1Cache(size = '64kB'),
-                                              L1Cache(size = '64kB'))
-    if options.l2cache:
-        system.l2 = L2Cache(size='2MB')
-        system.tol2bus = SystemXBar()
-        system.l2.cpu_side = system.tol2bus.mem_side_ports
-        system.l2.mem_side = system.membus.cpu_side_ports
-        system.cpu[i].connectAllPorts(system.tol2bus, system.membus)
-    else:
-        system.cpu[i].connectAllPorts(system.membus)
+    if options.bp_type:
+        bpClass = ObjectList.bp_list.get(options.bp_type)
+        system.cpu[i].branchPred = bpClass()
+
     system.cpu[i].workload = process[i]
     system.cpu[i].createInterruptController()
     system.cpu[i].createThreads()
-
+CacheConfig.config_cache(options, system)
 root = Root(full_system = False, system = system)
 
 Simulation.run(options, root, system, FutureClass)
