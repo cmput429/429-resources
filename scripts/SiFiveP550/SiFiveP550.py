@@ -50,7 +50,7 @@ from m5.util import fatal
 
 # import the caches which we made
 from P550Caches import *
-
+from P550XBar import *
 
 #### CONSTANTS ####
 
@@ -119,6 +119,11 @@ system.l2bus = [L2XBar() for i in range((int(args.nprocs)))]
 system.l2cache = [L2Cache(args) for i in range((int(args.nprocs)))]
 
 # NOTE optionally we could create an l3 cache as well
+system.l3bus = L3XBar()
+
+# and the corresponding cache
+system.l3cache = L3Cache(args)
+
 # Create a memory bus
 # Note that this is the system membus to the unified DRAM
 system.membus = SystemXBar()
@@ -141,8 +146,12 @@ for i in range(int(args.nprocs)):
 
     system.l2cache[i].connectCPUSideBus(system.l2bus[i])
 
-    # Connect the L2 cache to the membus
-    system.l2cache[i].connectMemSideBus(system.membus)
+    # Connect the L2 cache to the l3 cache
+    system.l2cache[i].connectMemSideBus(system.l3bus)
+
+# Connect the L3 cache to the system membus
+system.l3cache.connectCPUSideBus(system.l3bus)
+system.l3cache.connectMemSideBus(system.membus)
 
 # Connect the system up to the membus
 system.system_port = system.membus.cpu_side_ports
