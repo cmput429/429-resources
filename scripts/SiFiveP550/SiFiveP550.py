@@ -67,6 +67,7 @@ sys.path.append(os.environ['GEM_CONFIGS'])
 
 # import the SimpleOpts module
 from common import SimpleOpts
+from common import Options
 
 # Default to running 'hello', use the compiled ISA to find the binary
 # grab the specific path to the binary
@@ -81,10 +82,24 @@ default_binary = os.path.join(
 #        so we can use all argument options as we would there
 
 # Binary to execute
-SimpleOpts.add_option("binary", nargs="?", default=default_binary)
+SimpleOpts.add_option("--binary", nargs="?", default=default_binary)
+
+# Arguments to the binary
+SimpleOpts.add_option("--input", default="")
+
+# Any additional flags
+SimpleOpts.add_option("--flags", default="")
 
 # Number of CPU's
-SimpleOpts.add_option("--nprocs", default=1)
+SimpleOpts.add_option("--nprocs", default=1, type=int)
+
+# Number of instructions for which to run
+# NOTE: this can also be added with the Options function
+# Options.addCommonOptions(SimpleOpts.parser)
+SimpleOpts.add_option("-I", "--maxinsts",
+                      action="store", type=int,
+                      default=None,
+                      help="Total number of instructions to simulate")
 
 # Finalize the arguments and grab the args so we can pass it on to our objects
 args = SimpleOpts.parse_args()
@@ -107,7 +122,7 @@ system.clk_domain.voltage_domain = VoltageDomain()
 
 # Set up the system
 system.mem_mode = "timing"  # Use timing accesses
-system.mem_ranges = [AddrRange("512MB")]  # Create an address range
+system.mem_ranges = [AddrRange("8192MB")]  # Create an address range
 
 # Create a multicore CPU
 system.cpu = [RiscvO3CPU() for i in range((int(args.nprocs)))]
@@ -168,9 +183,9 @@ system.workload = SEWorkload.init_compatible(args.binary)
 process = Process()
 # Set the command
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [os.path.join(thispath, args.binary)]
-# Set the cpu to use the process as its workload and create thread contexts
+process.cmd = [os.path.join(os.getcwd(), args.binary), os.path.join(os.getcwd(), args.input)]
 
+# Set the cpu to use the process as its workload and create thread contexts
 # Add the common scripts to our path
 m5.util.addToPath(os.environ['GEM_CONFIGS'])
 for i in range(int(args.nprocs)):
@@ -179,9 +194,15 @@ for i in range(int(args.nprocs)):
 
 # set up the root SimObject and start the simulation
 root = Root(full_system=False, system=system)
+
+# Use our maxinsts to limit the execution time of the process
+if args.maxinsts:
+    for i in range(args.nprocs):
+        system.cpu[i].max_insts_any_thread = args.maxinsts
+
 # instantiate all of the objects we've created above
 m5.instantiate()
 
-print(f"Beginning simulation!")
+print(f"Beginning simulation! Executing {args.maxinsts} instructions...")
 exit_event = m5.simulate()
 print(f"Exiting @ tick {m5.curTick()} because {exit_event.getCause()}")
