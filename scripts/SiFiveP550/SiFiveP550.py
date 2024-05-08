@@ -51,6 +51,7 @@ from m5.util import fatal
 # import the caches which we made
 from P550Caches import *
 from P550XBar import *
+from P550FUPool import *
 
 #### CONSTANTS ####
 
@@ -163,6 +164,9 @@ for i in range(int(args.nprocs)):
 
     # Connect the L2 cache to the l3 cache
     system.l2cache[i].connectMemSideBus(system.l3bus)
+
+    # Add all the functional units
+    system.cpu[i].fuPool = FuPool
 
 # Connect the L3 cache to the system membus
 system.l3cache.connectCPUSideBus(system.l3bus)
