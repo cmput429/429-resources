@@ -5,7 +5,6 @@ Resources necessary for Assignments 1-4 in CMPUT 429.
 - cpu2017 - inputs and compiled binaries for a collection of the SPEC CPU 2017 benchmarks
 - gem5 - a pointer to the gem5 CPU simulation tool at version 23.0.0.1
 - hashmark - inputs and compiled binaries for the hashmark benchmarks
-- hello - a hello world program to get you familiar with gem5
 - scripts - a collection of useful scripts for the course
 - riscv-gnu-toolchain - a pointer to the riscv cross compiling toolchain
 
@@ -19,3 +18,5 @@ You should set the following environment variables on your system either by edit
 - `GEM_TESTS='$GEM_PATH/tests`
 
 Setting these environment variables will allow you to use the scripts in the `scripts/` directory in place instead of copying to the gem5 repository. Additionally this makes it easier to explain things during the tutorial videos.
+
+A `Hello World!` program is located in the `scripts` directory to help you get familiar with the gem5 simulator. There are also a collection of tutorial videos located on the [course website](https://cmput429.github.io/429-labs/) that you should watch, since they contain a myriad of useful tidbits.
