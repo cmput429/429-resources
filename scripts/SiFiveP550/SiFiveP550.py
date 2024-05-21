@@ -43,6 +43,7 @@ This file exports options for the L1 I/D and L2 cache sizes."""
 import m5
 import os
 import sys
+from enum import Enum
 
 # import all of the SimObjects
 from m5.objects import *
@@ -52,6 +53,7 @@ from m5.util import fatal
 from P550Caches import *
 from P550XBar import *
 from P550FUPool import *
+import Spec
 
 #### CONSTANTS ####
 
@@ -86,10 +88,9 @@ default_binary = os.path.join(
 SimpleOpts.add_option("--binary", nargs="?", default=default_binary)
 
 # Arguments to the binary
-SimpleOpts.add_option("--input", default="")
-
-# Any additional flags
-SimpleOpts.add_option("--flags", default="")
+SimpleOpts.add_option("--input", default="", help="Use this if you need a file")
+SimpleOpts.add_option("--args" , default="", help="Use this for simple args")
+SimpleOpts.add_option("--spec" , default=None, help="Use this if you want to run a spec benchmark. NOTE: this will override input and args")
 
 # Number of CPU's
 SimpleOpts.add_option("--nprocs", default=1, type=int)
@@ -187,7 +188,13 @@ system.workload = SEWorkload.init_compatible(args.binary)
 process = Process()
 # Set the command
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [os.path.join(os.getcwd(), args.binary), os.path.join(os.getcwd(), args.input)]
+if args.input == "":
+    process.cmd = [os.path.join(os.getcwd(), args.binary), args.args]
+else:
+    process.cmd = [os.path.join(os.getcwd(), args.binary), os.path.join(os.getcwd(), args.input), args.args]
+
+if args.spec:
+    process = Spec.get_spec(args.spec)
 
 # Set the cpu to use the process as its workload and create thread contexts
 # Add the common scripts to our path
@@ -207,6 +214,6 @@ if args.maxinsts:
 # instantiate all of the objects we've created above
 m5.instantiate()
 
-print(f"Beginning simulation! Executing {args.maxinsts} instructions...")
+print(f"Beginning simulation! Executing {args.maxinsts} instructions for {process.cmd}...")
 exit_event = m5.simulate()
 print(f"Exiting @ tick {m5.curTick()} because {exit_event.getCause()}")
