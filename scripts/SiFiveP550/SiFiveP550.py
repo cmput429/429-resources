@@ -71,6 +71,7 @@ sys.path.append(os.environ['GEM_CONFIGS'])
 # import the SimpleOpts module
 from common import SimpleOpts
 from common import Options
+from common import ObjectList
 
 # Default to running 'hello', use the compiled ISA to find the binary
 # grab the specific path to the binary
@@ -94,6 +95,9 @@ SimpleOpts.add_option("--spec" , default=None, help="Use this if you want to run
 
 # Number of CPU's
 SimpleOpts.add_option("--nprocs", default=1, type=int)
+
+# Branch Predictor
+SimpleOpts.add_option("--branch_predictor", default=None)
 
 # Number of instructions for which to run
 # NOTE: this can also be added with the Options function
@@ -169,6 +173,12 @@ for i in range(int(args.nprocs)):
     # Add all the functional units
     system.cpu[i].fuPool = FuPool
 
+
+    if args.branch_predictor:
+        print(ObjectList.bp_list)
+        bpClass = ObjectList.bp_list.get(args.branch_predictor)
+        system.cpu[i].branchPred = bpClass()
+
 # Connect the L3 cache to the system membus
 system.l3cache.connectCPUSideBus(system.l3bus)
 system.l3cache.connectMemSideBus(system.membus)
@@ -210,6 +220,8 @@ root = Root(full_system=False, system=system)
 if args.maxinsts:
     for i in range(args.nprocs):
         system.cpu[i].max_insts_any_thread = args.maxinsts
+else:
+    args.maxinsts = "all of the"
 
 # instantiate all of the objects we've created above
 m5.instantiate()

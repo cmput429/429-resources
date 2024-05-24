@@ -1,4 +1,4 @@
-def get_spec(bench: str):  # TODO add support for more of the benchmarks
+def get_spec(bench: str, workload=None):  # TODO add support for more of the benchmarks
     # if bench == 'perlbench':
     #     return perlbench
     if bench == 'xz':
@@ -6,7 +6,7 @@ def get_spec(bench: str):  # TODO add support for more of the benchmarks
     elif bench == 'gcc':
         return gcc
     elif bench == 'gcc1':
-        return gcc_wl1
+        return gcc1
     # elif bench == 'bwaves':
     #     return bwaves
     # elif bench == 'gamess':
@@ -47,8 +47,8 @@ def get_spec(bench: str):  # TODO add support for more of the benchmarks
     #     return h264ref
     # elif bench == 'tonto':
     #     return tonto
-    # elif bench == 'lbm':
-    #     return lbm
+    elif bench == 'lbm':
+        return lbm
     # elif bench == 'omnetpp':
     #     return omnetpp
     # elif bench == 'astar':
@@ -66,7 +66,6 @@ def get_spec(bench: str):  # TODO add support for more of the benchmarks
     else:
         return None
 
-
 from m5.objects import Process
 import os
 
@@ -80,11 +79,10 @@ gcc.executable = os.path.join(binary_dir, 'cpugcc_r_base.riscv')
 input = os.path.join(data_dir, 'gcc/lbm.c')
 gcc.cmd = [gcc.executable] + [input] + ['-o', 'gcc_tmp.o']
 
-#502.gcc_r with alternate workload
-gcc_wl1 = Process()
-gcc_wl1.executable = os.path.join(binary_dir, 'cpugcc_r_base.riscv')
-input = os.path.join(data_dir, 'gcc/train01.c')
-gcc_wl1.cmd = [gcc_wl1.executable] + [input] + ['-o', 'gcc_tmp.o']
+gcc1 = Process()
+gcc1.executable = gcc.executable
+input = os.path.join(data_dir, 'gcc/mcf.c')
+gcc1.cmd = [gcc.executable] + [input] + ['-o', 'gcc_tmp.o']
 
 #505.mcf_r
 mcf = Process()
@@ -92,7 +90,16 @@ mcf.executable = os.path.join(binary_dir, 'mcf_r_base.riscv')
 input = os.path.join(data_dir, 'mcf/mcf1.in')
 mcf.cmd = [mcf.executable] + [input]
 
-#557.xz_r
-xz = Process()
-xz.executable = os.path.join(binary_dir, 'xz_r_base.riscv')
-input = os.path.join(data_dir, 'xz/code.c.xz')
+#401.bzip2
+bzip2 = Process()
+bzip2.executable =  binary_dir+'bzip22006.arm'
+data=data_dir+'bzip2/test/input/dryer.jpg'
+bzip2.cmd = [bzip2.executable] + [data, '2']
+bzip2.output = 'dryer.out'
+
+#519.lbm_r
+lbm = Process()
+lbm.executable = os.path.join(binary_dir, 'lbm_r_base.riscv')
+file = os.path.join(data_dir, 'lbm/lbm.orb')
+lbm.cmd = [lbm.executable] + ['500', 'reference.dat', '0', '0', file]
+

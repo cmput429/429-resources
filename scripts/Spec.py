@@ -1,13 +1,12 @@
 def get_spec(bench: str, workload=None):  # TODO add support for more of the benchmarks
     # if bench == 'perlbench':
     #     return perlbench
-    elif bench == 'xz':
+    if bench == 'xz':
         return xz
     elif bench == 'gcc':
-        if workload == 1:
-            return gcc_wl1
-        else:
-            return gcc
+        return gcc
+    elif bench == 'gcc1':
+        return gcc1
     # elif bench == 'bwaves':
     #     return bwaves
     # elif bench == 'gamess':
@@ -48,8 +47,8 @@ def get_spec(bench: str, workload=None):  # TODO add support for more of the ben
     #     return h264ref
     # elif bench == 'tonto':
     #     return tonto
-    # elif bench == 'lbm':
-    #     return lbm
+    elif bench == 'lbm':
+        return lbm
     # elif bench == 'omnetpp':
     #     return omnetpp
     # elif bench == 'astar':
@@ -80,6 +79,11 @@ gcc.executable = os.path.join(binary_dir, 'cpugcc_r_base.riscv')
 input = os.path.join(data_dir, 'gcc/lbm.c')
 gcc.cmd = [gcc.executable] + [input] + ['-o', 'gcc_tmp.o']
 
+gcc1 = Process()
+gcc1.executable = gcc.executable
+input = os.path.join(data_dir, 'gcc/mcf.c')
+gcc1.cmd = [gcc.executable] + [input] + ['-o', 'gcc_tmp.o']
+
 #505.mcf_r
 mcf = Process()
 mcf.executable = os.path.join(binary_dir, 'mcf_r_base.riscv')
@@ -93,11 +97,9 @@ data=data_dir+'bzip2/test/input/dryer.jpg'
 bzip2.cmd = [bzip2.executable] + [data, '2']
 bzip2.output = 'dryer.out'
 
-#473.astar
-astar=Process()
-astar.executable =  binary_dir+'astar2006.arm'
-data=data_dir+'astar/test/input/lake.cfg'
-astar.cmd = [astar.executable]+[data]
-astar.output = 'lake.out'
-
+#519.lbm_r
+lbm = Process()
+lbm.executable = os.path.join(binary_dir, 'lbm_r_base.riscv')
+file = os.path.join(data_dir, 'lbm/lbm.orb')
+lbm.cmd = [lbm.executable] + ['500', 'reference.dat', '0', '0', file]
 
