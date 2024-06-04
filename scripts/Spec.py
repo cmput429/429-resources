@@ -1,4 +1,4 @@
-def get_spec(bench: str, workload=None):  # TODO add support for more of the benchmarks
+def get_spec(bench: str):  # TODO add support for more of the benchmarks
     # if bench == 'perlbench':
     #     return perlbench
     if bench == 'xz':
@@ -7,12 +7,20 @@ def get_spec(bench: str, workload=None):  # TODO add support for more of the ben
         return gcc
     elif bench == 'gcc1':
         return gcc1
+    elif bench == 'abench':
+        return abench
+    elif bench == 'abench1':
+        return abench1
     # elif bench == 'bwaves':
     #     return bwaves
     # elif bench == 'gamess':
     #     return gamess
     elif bench == 'mcf':
         return mcf
+    elif bench == 'mcf1':
+        return mcf1
+    elif bench == 'mcf2':
+        return mcf2
     # elif bench == 'milc':
     #     return milc
     # elif bench == 'zeusmp':
@@ -90,6 +98,16 @@ mcf.executable = os.path.join(binary_dir, 'mcf_r_base.riscv')
 input = os.path.join(data_dir, 'mcf/mcf1.in')
 mcf.cmd = [mcf.executable] + [input]
 
+mcf1 = Process()
+mcf1.executable = os.path.join(binary_dir, 'mcf_r_base.riscv')
+input = os.path.join(data_dir, 'mcf/mcf2.in')
+mcf1.cmd = [mcf.executable] + [input]
+
+mcf2 = Process()
+mcf2.executable = os.path.join(binary_dir, 'mcf_r_base.riscv')
+input = os.path.join(data_dir, 'mcf/mcf3.in')
+mcf2.cmd = [mcf.executable] + [input]
+
 #401.bzip2
 bzip2 = Process()
 bzip2.executable =  binary_dir+'bzip22006.arm'
@@ -102,4 +120,15 @@ lbm = Process()
 lbm.executable = os.path.join(binary_dir, 'lbm_r_base.riscv')
 file = os.path.join(data_dir, 'lbm/lbm.orb')
 lbm.cmd = [lbm.executable] + ['500', 'reference.dat', '0', '0', file]
+
+# abench (my synthetic one)
+abench = Process()
+abench.executable = os.path.join(binary_dir, 'abench.riscv')
+input = os.path.join(data_dir, 'abench1.in')
+abench.cmd = [abench.executable] + [input]
+
+abench1 = Process()
+abench1.executable = os.path.join(binary_dir, 'abench.riscv')
+input = os.path.join(data_dir, 'abench2.in')
+abench1.cmd = [abench1.executable] + [input]
 
