@@ -22,10 +22,6 @@ except e:
 # m5.util.addToPath(os.environ['GEM_CONFIGS'])
 sys.path.append(os.environ['GEM_CONFIGS'])
 
-# import the SimpleOpts module
-from common import SimpleOpts
-from common import Options
-
 # Default to running 'hello', use the compiled ISA to find the binary
 # grab the specific path to the binary
 thispath = os.path.dirname(os.path.realpath(__file__))
