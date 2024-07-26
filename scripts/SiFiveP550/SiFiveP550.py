@@ -87,12 +87,17 @@ default_binary = os.path.join(
 #        so we can use all argument options as we would there
 
 # Binary to execute
-SimpleOpts.add_option("--binary", nargs="?", default=default_binary)
+SimpleOpts.add_option("--binary", nargs="?", default=default_binary,
+                      help="Specify binary file to execute on the simulated processor")
 
 # Arguments to the binary
-SimpleOpts.add_option("--input", default="", help="Use this if you need a file")
-SimpleOpts.add_option("--args" , default="", help="Use this for simple args")
-SimpleOpts.add_option("--spec" , default=None, help="Use this if you want to run a spec benchmark. NOTE: this will override input and args")
+SimpleOpts.add_option("--input", default="",
+                      help="Specify input file for the executed binary on the simulated processor")
+SimpleOpts.add_option("--args" , default="",
+                      help="Specify arguments for the executed binary on the simulated processor")
+SimpleOpts.add_option("--spec" , default=None,
+                      help="Specify SPEC CPU 2017 benchmark to run (NOTE: will override --input and --args with SPEC inputs and args)")
+
 
 # Number of CPU's
 SimpleOpts.add_option("--nprocs", default=1, type=int)
