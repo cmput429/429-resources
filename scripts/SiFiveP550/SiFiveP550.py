@@ -48,6 +48,7 @@ from enum import Enum
 # import all of the SimObjects
 from m5.objects import *
 from m5.util import fatal
+from m5.stats.gem5stats import get_simstat
 
 # import the caches which we made
 from P550Caches import *
@@ -221,7 +222,8 @@ if args.maxinsts:
     for i in range(args.nprocs):
         system.cpu[i].max_insts_any_thread = args.maxinsts
 else:
-    args.maxinsts = "all of the"
+    # Run the entire program
+    pass
 
 # instantiate all of the objects we've created above
 m5.instantiate()
@@ -229,3 +231,7 @@ m5.instantiate()
 print(f"Beginning simulation! Executing {args.maxinsts} instructions for {process.cmd}...")
 exit_event = m5.simulate()
 print(f"Exiting @ tick {m5.curTick()} because {exit_event.getCause()}")
+# if you want to use the python stats API
+# simstats = get_simstat(system)
+#
+# print(simstats.cpu[0].numCycles)

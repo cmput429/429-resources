@@ -19,7 +19,7 @@ class L1Cache(Cache):
         self.mem_side = bus.cpu_side_ports
 
 
-# Vary the L1I cache and L1Dcaceh based on that
+# Vary the L1I cache and L1Dcache based on that
 class L1ICache(L1Cache):
     size = '16kB'
 
