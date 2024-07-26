@@ -21,6 +21,10 @@ def get_spec(bench: str):  # TODO add support for more of the benchmarks
         return mcf1
     elif bench == 'mcf2':
         return mcf2
+    elif bench == 'x264_v':
+        return x264_v
+    elif bench == 'x264_s':
+        return x264_s
     # elif bench == 'milc':
     #     return milc
     # elif bench == 'zeusmp':
@@ -132,3 +136,15 @@ abench1.executable = os.path.join(binary_dir, 'abench.riscv')
 input = os.path.join(data_dir, 'abench2.in')
 abench1.cmd = [abench1.executable] + [input]
 
+#525.x264_s
+x264_s = Process()
+x264_s.executable = os.path.join(binary_dir, 'x264_r.s.riscv')
+input = os.path.join(data_dir, 'x264/BuckBunny.264')
+x264_s.cmd = [x264_s.executable, '-p 1', '-B 1000',
+                    '-o bb.mkv', input, '854x480']
+#'-o bb.mkv', input, '854x480']
+
+x264_v = Process()
+x264_v.executable = os.path.join(binary_dir, 'x264_r.v.riscv')
+x264_v.cmd = [x264_v.executable] + ['-p 1', '-B 1000',
+                                    '-o bb.mkv', input, '854x480']
