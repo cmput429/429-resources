@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Define the new extension
+new_extension=".riscv"
+
+# Iterate over all files in the current directory
+for file in *; do
+    # Check if the item is a file (not a directory)
+    if [ -f "$file" ]; then
+        # Extract the file name without extension
+        file_name="${file%.*}"
+        # Rename the file with the new extension
+        mv "$file" "$file_name$new_extension"
+        echo "Changed extension of $file to $file_name$new_extension"
+    fi
+done
+

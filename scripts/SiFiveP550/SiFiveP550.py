@@ -43,15 +43,18 @@ This file exports options for the L1 I/D and L2 cache sizes."""
 import m5
 import os
 import sys
+from enum import Enum
 
 # import all of the SimObjects
 from m5.objects import *
 from m5.util import fatal
+from m5.stats.gem5stats import get_simstat
 
 # import the caches which we made
 from P550Caches import *
 from P550XBar import *
 from P550FUPool import *
+import Spec
 
 #### CONSTANTS ####
 
@@ -69,6 +72,7 @@ sys.path.append(os.environ['GEM_CONFIGS'])
 # import the SimpleOpts module
 from common import SimpleOpts
 from common import Options
+from common import ObjectList
 
 # Default to running 'hello', use the compiled ISA to find the binary
 # grab the specific path to the binary
@@ -83,16 +87,23 @@ default_binary = os.path.join(
 #        so we can use all argument options as we would there
 
 # Binary to execute
-SimpleOpts.add_option("--binary", nargs="?", default=default_binary)
+SimpleOpts.add_option("--binary", nargs="?", default=default_binary,
+                      help="Specify binary file to execute on the simulated processor")
 
 # Arguments to the binary
-SimpleOpts.add_option("--input", default="")
+SimpleOpts.add_option("--input", default="",
+                      help="Specify input file for the executed binary on the simulated processor")
+SimpleOpts.add_option("--args" , default="",
+                      help="Specify arguments for the executed binary on the simulated processor")
+SimpleOpts.add_option("--spec" , default=None,
+                      help="Specify SPEC CPU 2017 benchmark to run (NOTE: will override --input and --args with SPEC inputs and args)")
 
-# Any additional flags
-SimpleOpts.add_option("--flags", default="")
 
 # Number of CPU's
 SimpleOpts.add_option("--nprocs", default=1, type=int)
+
+# Branch Predictor
+SimpleOpts.add_option("--branch_predictor", default=None)
 
 # Number of instructions for which to run
 # NOTE: this can also be added with the Options function
@@ -168,6 +179,12 @@ for i in range(int(args.nprocs)):
     # Add all the functional units
     system.cpu[i].fuPool = FuPool
 
+
+    if args.branch_predictor:
+        print(ObjectList.bp_list)
+        bpClass = ObjectList.bp_list.get(args.branch_predictor)
+        system.cpu[i].branchPred = bpClass()
+
 # Connect the L3 cache to the system membus
 system.l3cache.connectCPUSideBus(system.l3bus)
 system.l3cache.connectMemSideBus(system.membus)
@@ -187,7 +204,13 @@ system.workload = SEWorkload.init_compatible(args.binary)
 process = Process()
 # Set the command
 # cmd is a list which begins with the executable (like argv)
-process.cmd = [os.path.join(os.getcwd(), args.binary), os.path.join(os.getcwd(), args.input)]
+if args.input == "":
+    process.cmd = [os.path.join(os.getcwd(), args.binary), args.args]
+else:
+    process.cmd = [os.path.join(os.getcwd(), args.binary), os.path.join(os.getcwd(), args.input), args.args]
+
+if args.spec:
+    process = Spec.get_spec(args.spec)
 
 # Set the cpu to use the process as its workload and create thread contexts
 # Add the common scripts to our path
@@ -203,10 +226,17 @@ root = Root(full_system=False, system=system)
 if args.maxinsts:
     for i in range(args.nprocs):
         system.cpu[i].max_insts_any_thread = args.maxinsts
+else:
+    # Run the entire program
+    pass
 
 # instantiate all of the objects we've created above
 m5.instantiate()
 
-print(f"Beginning simulation! Executing {args.maxinsts} instructions...")
+print(f"Beginning simulation! Executing {args.maxinsts} instructions for {process.cmd}...")
 exit_event = m5.simulate()
 print(f"Exiting @ tick {m5.curTick()} because {exit_event.getCause()}")
+# if you want to use the python stats API
+# simstats = get_simstat(system)
+#
+# print(simstats.cpu[0].numCycles)
