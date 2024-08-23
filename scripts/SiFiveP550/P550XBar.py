@@ -26,9 +26,8 @@
 
 """ Caches with options for a simple gem5 configuration script
 
-This file contains L1 I/D and L2 caches to be used in the simple
-gem5 configuration script. It uses the SimpleOpts wrapper to set up command
-line options from each individual class.
+This file contains crossbars for L2 and L3 to be used in the simple
+gem5 configuration file.
 """
 
 import m5
@@ -43,16 +42,27 @@ from common import SimpleOpts
 # Some specific options for caches
 # For all options see src/mem/cache/BaseCache.py
 
-class L3XBar(CoherentXBar):
+class P550L3XBar(CoherentXBar):
     # By default this is a 256 bit crossbar
-    width = 256
+    width = 64
 
     # We will assume some latency to get through
     #  this crossbar, since the L2 caches will be
     #  connected on-chip but globally
     frontend_latency = 5
-    forward_latency = 3 
+    forward_latency = 3
     response_latency = 5
     snoop_response_latency = 3
 
     point_of_unification = True
+
+
+class P550L2XBar(CoherentXBar):
+    width = 32
+
+    frontend_latency = 1
+    forward_latency = 0
+    response_latency = 1
+    snoop_response_latency = 1
+
+    point_of_unification = False
