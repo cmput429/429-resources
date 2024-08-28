@@ -1,0 +1,197 @@
+resources_dir = read("prop:resources_dir")
+
+class Resource {
+      category: String
+      id: String
+      description: String
+      architecture: String
+      size: Int
+      tags: Listing<String>
+      is_zipped: Boolean = false
+      md5sum: String
+      source: String
+      url: String
+      license: String = "https://www.spec.org/cpu2017/Docs/licenses.html"
+      author: Listing<String> = new Listing {
+              "Various"
+      }
+      gem5_versions: Listing<String> = new Listing {"24.0"}
+      source_url: String
+      resource_version: String = "1.0.0"
+      example_usage: String
+}
+
+class Params {
+      arguments: Listing<String>
+}
+
+class ShortResource {
+      id: String
+      resource_version: String
+}
+
+class Workload {
+      category: String = "workload"
+      id: String
+      description: String
+      `function`: String
+      resources: Mapping<String, ShortResource>
+      architecture: String
+      tags: Listing<String>
+      license: String = "https://www.spec.org/cpu2017/Docs/licenses.html"
+      author: Listing<String> = new Listing {
+          "Various"
+      }
+      additional_params: Params
+      source_url: String
+      resource_version: String = "1.0.0"
+      gem5_versions: Listing<String> = new Listing {"24.0"}
+      example_usage: String
+}
+
+class ShortWorkload {
+      id: String
+      resource_version: String
+      input_group: Listing<String>
+}
+
+class Suite {
+      id: String
+      description: String
+      category: String = "suite"
+      resource_version: String = "1.0.0"
+      workloads: Listing<ShortWorkload>
+      gem5_versions: Listing<String> = new Listing {"24.0"}
+      example_usage: String
+      tags: Listing<String>
+      author: Listing<String> = new Listing {
+          "Various"
+      }
+      architecture: String = "RISCV"
+      license: String = "https://www.spec.org/cpu2017/Docs/licenses.html"
+      additional_params: Mapping<String, String>?
+      source_url: String = ""
+}
+
+hidden binaries = new Mapping {
+  ["gcc-lbm"] {
+    name = "gcc-lbm"
+    binary = "cpugcc_r_base"
+    md5sum = "476c03e9c3c937f29c1cd5025728bdfb"
+    arguments = new Listing {
+      "$429_RESOURCES/local_resources/inputs/gcc/lbm.c"
+      "-o"
+      "gcc_tmp.o"
+    }
+  }
+  ["gcc-mcf"] {
+    name = "gcc-mcf"
+    binary = "cpugcc_r_base"
+    md5sum = "476c03e9c3c937f29c1cd5025728bdfb"
+    arguments = new Listing {
+      "$429_RESOURCES/local_resources/inputs/gcc/mcf.c"
+      "-o"
+      "gcc_tmp.o"
+    }
+  }
+  ["x264-scalar"] {
+    name = "x264-scalar"
+    binary = "x264_r.s"
+    md5sum = "40f889e2649f1156569a9483281fcb2c"
+    arguments = new Listing {
+      "-p 1"
+      "-B 1000"
+      "-o bb.mkv"
+      "$429_RESOURCES/local_resources/inputs/x264/BuckBunny.264"
+      "854x480"
+    }
+  }
+  ["x264-vector"] {
+    name = "x264-vector"
+    binary = "x264_r.v"
+    md5sum = "c365d2a47726851f39c42229902beb01"
+    arguments = new Listing {
+      "-p 1"
+      "-B 1000"
+      "-o bb.mkv"
+      "$429_RESOURCES/local_resources/inputs/x264/BuckBunny.264"
+      "854x480"
+    }
+  }
+  ["mcf"] {
+    name = "mcf"
+    binary = "mcf_r_base"
+    md5sum = "62b032e61433fbeef498b61753fdd5a6"
+    arguments = new Listing {
+      "$429_RESOURCES/local_resources/input/mcf/mcf1.in"
+    }
+  }
+  ["conv1-scalar"] {
+    name = "conv1-scalar"
+    binary = "conv1"
+    md5sum = "011c068db27bb24b4593f15649c798c5"
+    arguments = new Listing {}
+  }
+  ["conv1-vector"] {
+    name = "conv1-vector"
+    binary = "conv1_vec"
+    md5sum = "de6cb6ea33b98e4f7d559be367549f99"
+    arguments = new Listing {}
+  }
+  ["conv2-scalar"] {
+    name = "conv2-scalar"
+    binary = "conv2"
+    md5sum = "6f286db4e7024b99b69e8b39168ba92d"
+    arguments = new Listing {}
+  }
+  ["conv2-vector"] {
+    name = "conv2-vector"
+    binary = "conv2_vect"
+    md5sum = "c3b8c4eb05950f59d2258539a43c3b07"
+    arguments = new Listing {}
+  }
+}
+
+
+resources = new Listing {
+  for (_binary in binaries) {
+    (Resource) {
+      category = "binary"
+      id = "riscv-spec-\(_binary.name)-bin"
+      description = "Benchmark \(_binary.name) compiled for RISC-V."
+      architecture = "RISCV"
+      size = 1
+      tags = new Listing {"spec"}
+      md5sum = "\(_binary.md5sum)"
+      source = "429bin/\(_binary.binary).riscv"
+      url = "file://\(resources_dir)/429bin/\(_binary.binary).riscv"
+      source_url = ""
+      example_usage = "obtain_resource(\"riscv-spec-\(_binary.name)-bin\")"
+    }
+
+    (Workload) {
+      category = "workload"
+      id = "riscv-spec-\(_binary.name)-run-se"
+      description = "spec benchmark \(_binary.name) run configuration for RISC-V SE model."
+      `function` = "set_se_binary_workload"
+      resources {
+        ["binary"] = (ShortResource) {
+          id = "riscv-spec-\(_binary.name)-bin"
+          resource_version = "1.0.0"
+        }
+      }
+      additional_params {
+        arguments = _binary.arguments
+      }
+      architecture = "RISCV"
+      tags = new Listing {"spec" "se" "riscv"}
+      source_url = ""
+      example_usage = "obtain_resource(\"riscv-spec-\(_binary.name)-run-se\")"
+    }
+  }
+}
+
+output {
+  renderer = new JsonRenderer{}
+  value = resources
+}
