@@ -35,7 +35,7 @@ requires(isa_required=ISA.RISCV)
 #  the maximum number of sims you can run
 multisim.set_num_processes(4)
 
-for workload in obtain_resource("riscv-polybench-suite"):
+for workload in obtain_resource("riscv-polybench-suite", quiet=True):
     # We use the P550 Cache system
     #  see P550Caches.py
     cache_hierarchy = P550CacheHierarchy()

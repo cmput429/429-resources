@@ -1,0 +1,198 @@
+resources_dir = read("prop:resources_dir")
+
+class Resource {
+      category: String
+      id: String
+      description: String
+      architecture: String
+      size: Int
+      tags: Listing<String>
+      is_zipped: Boolean = false
+      md5sum: String
+      source: String
+      url: String
+      license: String = "OHIO STATE UNIVERSITY SOFTWARE DISTRIBUTION LICENSE"
+      author: Listing<String> = new Listing {
+              "Louis-Noel Pouchet"
+              "Tomofumi Yuki"
+      }
+      gem5_versions: Listing<String> = new Listing {"24.0"}
+      source_url: String
+      resource_version: String = "1.0.0"
+      example_usage: String
+}
+
+class ShortResource {
+      id: String
+      resource_version: String
+}
+
+class Workload {
+      category: String = "workload"
+      id: String
+      description: String
+      `function`: String
+      resources: Mapping<String, ShortResource>
+      architecture: String
+      tags: Listing<String>
+      license: String = "OHIO STATE UNIVERSITY SOFTWARE DISTRIBUTION LICENSE"
+      author: Listing<String> = new Listing {
+          "Louis-Noel Pouchet"
+          "Tomofumi Yuki"
+      }
+      source_url: String
+      resource_version: String = "1.0.0"
+      gem5_versions: Listing<String> = new Listing {"24.0"}
+      example_usage: String
+}
+
+class ShortWorkload {
+      id: String
+      resource_version: String
+      input_group: Listing<String>
+}
+
+class Suite {
+      id: String
+      description: String
+      category: String = "suite"
+      resource_version: String = "1.0.0"
+      workloads: Listing<ShortWorkload>
+      gem5_versions: Listing<String> = new Listing {"24.0"}
+      example_usage: String
+      tags: Listing<String>
+      author: Listing<String> = new Listing {
+          "Louis-Noel Pouchet"
+          "Tomofumi Yuki"
+      }
+      architecture: String = "RISCV"
+      license: String = "OHIO STATE UNIVERSITY SOFTWARE DISTRIBUTION LICENSE"
+      additional_params: Mapping<String, String>?
+      source_url: String = "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/"
+}
+
+hidden binaries = Map(
+         "2mm", "ab2f9da499113d852640489fa4e8fd04",
+         "3mm", "63078237115d02910592741b86ab2171",
+         "adi", "63359e5e780a7b33833c02f03223a26f",
+         "atax", "92fc9a3ed4c9cf1d07437f5dcb6b6b53",
+         "bicg", "8885621777a1cef8a05be76b7a20a3b8",
+         "cholesky", "8885621777a1cef8a05be76b7a20a3b8",
+         "correlation", "5ceb339aacda7254a9786f7be0b788c2",
+         "covariance", "9fb3229bd41a5a62b3af524a8608dde7",
+         "deriche", "4af145d65fa520a98d2be05f8b526b9a",
+         "doitgen", "e48300002e01d5eb73d1be35d57ffa09",
+         "durbin", "b17374e44c2854ec871c8eefe8e19422",
+         "fdtd-2d", "26efe925446355a80013c7298b9269e0",
+         "gemm", "4bea5ffa19f7112804d95121d53793fb",
+         "gemver", "0665e6c67e79a2e16fe1d9850fef6687",
+         "gesummv", "b1991abb5ba18b2a7d10137bfdd7906d",
+         "gramschmidt", "cc71021ee7a882aad455d6e7085bc6bb",
+         "heat-3d", "971ebfe8af156b309ae2d55ac321697c",
+         "jacobi-1d", "300ad964d33c616242c4447ae69fc5c0",
+         "jacobi-2d", "43453a02a4e0ae8ea7f781c1006c3a4a",
+         "lu", "c403e5328b94ff7414706db179f6c3fc",
+         "ludcmp", "a1f688717cd48ec3d08b4c3984b4643d",
+         "mvt", "8e7ae93005b9dc41b76d14f31a5a133a",
+         "nussinov", "6188f0c18ad38bb00af05e1afa7e47fd",
+         "seidel-2d", "39fd0543bff812a8ff19714b083201fb",
+         "symm", "ab5295155b3caabe24ebc0910a7224b7",
+         "syr2k", "962be55b69cfb04d83b41c11956208ec",
+         "syrk", "b42470744d275bdc194a907369d1318b",
+         "trisolv", "88582c8e650990a2bb15dd05e357c049",
+         "trmm", "31e15e8ccc8841ba3bdd3dc245fe46c9"
+)
+
+resources = new Listing{
+  for (_binary, _md5sum in binaries) {
+    (Resource) {
+      category = "binary"
+      id = "riscv-polybench-\(_binary)-bin"
+      description = "Polybench benchmark \(_binary) compiled for RISC-V."
+      architecture = "RISCV"
+      size = 1
+      tags = new Listing {"polybench"}
+      md5sum = "\(_md5sum)"
+      source = "polybin/\(_binary).riscv"
+      url = "file://\(resources_dir)/local_resources/polybin/\(_binary).riscv"
+      source_url = if (_binary is "3mm"|"2mm"|"atax"|"bicg"|"doitgen"|"mvt")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/kernels/\(_binary)"
+                   else if (_binary is "gemm"|"gemver"|"gesummv"|"symm"|"syr2k"|"syrk"|"trmm")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/blas/\(_binary)"
+                   else if (_binary is "cholesky"|"durbin"|"gramschmidt"|"lu"|"ludcmp"|"trisolv")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/solvers/\(_binary)"
+                   else if (_binary is "correlation"|"covariance")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/datamining/\(_binary)"
+                   else if (_binary is "deriche"|"floyd-warshall"|"nussinov")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/medley/\(_binary)"
+                   else if (_binary is "adi"|"fdtd-2d"|"heat-3d"|"jacobi-1d"|"jacobi-2d"|"seidel-2d")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/stencils/\(_binary)"
+                   else "Failed"
+      example_usage = "obtain_resource(\"riscv-polybench-\(_binary)-bin\")"
+    }
+
+    (Workload) {
+      category = "workload"
+      id = "riscv-polybench-\(_binary)-run-se"
+      description = "Polybench benchmark \(_binary) run configuration for RISC-V SE model."
+      `function` = "set_se_binary_workload"
+      resources {
+        ["binary"] = (ShortResource) {
+          id = "riscv-polybench-\(_binary)-bin"
+          resource_version = "1.0.0"
+        }
+      }
+      architecture = "RISCV"
+      tags = new Listing {"polybench" "se" "riscv"}
+      source_url = if (_binary is "3mm"|"2mm"|"atax"|"bicg"|"doitgen"|"mvt")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/kernels/\(_binary)"
+                   else if (_binary is "gemm"|"gemver"|"gesummv"|"symm"|"syr2k"|"syrk"|"trmm")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/blas/\(_binary)"
+                   else if (_binary is "cholesky"|"durbin"|"gramschmidt"|"lu"|"ludcmp"|"trisolv")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/solvers/\(_binary)"
+                   else if (_binary is "correlation"|"covariance")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/datamining/\(_binary)"
+                   else if (_binary is "deriche"|"floyd-warshall"|"nussinov")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/medley/\(_binary)"
+                   else if (_binary is "adi"|"fdtd-2d"|"heat-3d"|"jacobi-1d"|"jacobi-2d"|"seidel-2d")
+                     "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/stencils/\(_binary)"
+                   else "Failed"
+      example_usage = "obtain_resource(\"riscv-polybench-\(_binary)-run-se\")"
+    }
+  }
+
+  (Suite) {
+    id = "riscv-polybench-suite"
+    description = "Polybench benchmark suite for RISC-V model."
+    resource_version = "1.0.0"
+    workloads = new Listing {
+      for (_binary, _ in binaries) {
+        (ShortWorkload) {
+          id = "riscv-polybench-\(_binary)-run-se"
+          resource_version = "1.0.0"
+          input_group = if (_binary is "3mm"|"2mm"|"atax"|"bicg"|"doitgen"|"mvt")
+                     new Listing {"linalg" "linalg-kernels"}
+                   else if (_binary is "gemm"|"gemver"|"gesummv"|"symm"|"syr2k"|"syrk"|"trmm")
+                     new Listing {"linalg" "linalg-blas"}
+                   else if (_binary is "cholesky"|"durbin"|"gramschmidt"|"lu"|"ludcmp"|"trisolv")
+                     new Listing {"linalg" "linalg-solvers"}
+                   else if (_binary is "correlation"|"covariance")
+                     new Listing {"datamining"}
+                   else if (_binary is "deriche"|"floyd-warshall"|"nussinov")
+                     new Listing {"medley"}
+                   else if (_binary is "adi"|"fdtd-2d"|"heat-3d"|"jacobi-1d"|"jacobi-2d"|"seidel-2d")
+                     new Listing {"stencil"}
+                   else new Listing {"Failed"}
+
+
+        }
+      }
+    }
+    example_usage = "obtain_resource(\"riscv-polybench-suite\")"
+  }
+}
+
+output {
+  renderer = new JsonRenderer{}
+  value = resources
+}

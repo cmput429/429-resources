@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Example of how to use the control file that we provide
+# Every line of the file is a separate execution of the benchmark
+
+# The execution MUST be able to handle input redirection.
+    # As in some control files will have "< file" which must be done properly
+
+# Arguments:
+#       <pathToExecutable>
+
+if [ "$#" -ne 1 ]; then
+    echo "ERROR: Arguments must be <pathToExecutable>"
+    echo ""
+    exit 1
+fi
+
+while read line; do # Execute each line separately
+    eval "$1 $line"
+done < control

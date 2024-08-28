@@ -1,0 +1,35 @@
+class Source {
+  url: String
+  isMongo: Boolean = false
+  dataSource: String?
+  database: String?
+  collection: String?
+  authUrl: String?
+  apiKey: String?
+}
+
+hidden resources_dir = read("prop:resources_dir")
+
+sources {
+  polybench = new Source {
+    url = "\(resources_dir)/local_resources/polybench.json"
+  }
+  resources = new Source {
+    url = "\(resources_dir)/local_resources/resources.json"
+  }
+  gem5_resources = new Source {
+    dataSource = "gem5-vision"
+    database = "gem5-vision"
+    collection = "resources"
+    url = "https://data.mongodb-api.com/app/data-ejhjf/endpoint/data/v1"
+    authUrl = "https://realm.mongodb.com/api/client/v2.0/app/data-ejhjf/auth/providers/api-key/login"
+    apiKey = "OIi5bAP7xxIGK782t8ZoiD2BkBGEzMdX3upChf9zdCxHSnMoiTnjI22Yw5kOSgy9"
+    isMongo = true
+  }
+}
+
+output {
+  renderer = new JsonRenderer{
+    omitNullProperties = true
+  }
+}
