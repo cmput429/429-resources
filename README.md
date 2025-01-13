@@ -19,4 +19,4 @@ You should set the following environment variables on your system either by edit
 
 Setting these environment variables will allow you to use the scripts in the `scripts/` directory in place instead of copying to the gem5 repository. Additionally this makes it easier to explain things during the tutorial videos.
 
-A `Hello World!` program is located in the `scripts` directory to help you get familiar with the gem5 simulator. There are also a collection of tutorial videos located on the [course website](https://cmput429.github.io/429-labs/) that you should watch, since they contain a myriad of useful tidbits.
+A `Hello World!` program is located in the `scripts` directory to help you get familiar with the gem5 simulator. There are also a collection of tutorial videos located on the [course website](https://cmput429.github.io/429-website/) that you should watch, since they contain a myriad of useful tidbits.
