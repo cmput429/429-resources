@@ -36,7 +36,9 @@ class P550Core(BaseCPUCore):
 
     @classmethod
     def init_fupool(cls, integer: int, muldiv: int, rdwr: int):
-        return FUPool(FUList=[IntALU(count=integer), IntMultDiv(count=muldiv), RdWrPort(count=rdwr)])
+        # See the src/o3/FuncUnitConfig.py for what these actually mean
+        # if you want you can even make your own
+        return FUPool(FUList=[IntALU(count=integer), IntMultDiv(count=muldiv), FP_ALU(count=2), FP_MultDiv(count=2), ReadPort(count=rdwr), WritePort(count=rdwr)])
 
 
 class P550Processor(BaseCPUProcessor):
@@ -56,27 +58,5 @@ class P550Processor(BaseCPUProcessor):
             ]
         )
 
-class IntALU(FUDesc):
-    # Setup the integer ALU
-    opList = [ OpDesc(opClass='IntAlu') ]
-
-    def __init__(self, count: int):
-        super().__init__()
-        self.count = count
-
-class IntMultDiv(FUDesc):
-    # Setup the multiply/divide ALU
-    opList = [ OpDesc(opClass='IntMult', opLat=3),
-               OpDesc(opClass='IntDiv', opLat=20) ]
-
-    def __init__(self, count: int):
-        super().__init__()
-        self.count = count
-
-class RdWrPort(FUDesc):
-    # The read/write port handlers
-    opList = [ OpDesc(opClass='MemRead'), OpDesc(opClass='MemWrite') ]
-
-    def __init__(self, count: int):
-        super().__init__()
-        self.count = count
+    def __str__(self):
+        return "SiFiveP550"
