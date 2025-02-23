@@ -65,16 +65,18 @@ function get_pkl_binary_url() {
 }
 
 function write_env_vars() {
-  echo -e "\n" >> $1
-  echo "# CMPUT 429 Environment variables" >> $1
-  echo "export C429_RESOURCES=$( get_script_location )" >> $1
-  echo -e "export GEM_PATH=\$C429_RESOURCES/gem5" >> $1
-  echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs" >> $1
-  echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests" >> $1
-  echo -e "export GEM5_CONFIG=\$C429_RESOURCES/local_resources/sources.json" >> $1
-  echo -e "export CC=gcc-11" >> $1
-  echo -e "export CXX=g++-11" >> $1
-  echo -e "alias gem5=\$GEM_PATH/build/RISCV/gem5.opt" >> $1
+  {
+    echo -e "\n";
+    echo "# CMPUT 429 Environment variables";
+    echo "export C429_RESOURCES=$( get_script_location )";
+    echo -e "export GEM_PATH=\$C429_RESOURCES/gem5";
+    echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs";
+    echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests";
+    echo -e "export GEM5_CONFIG=\$C429_RESOURCES/local_resources/sources.json";
+    echo -e "export CC=gcc-11";
+    echo -e "export CXX=g++-11";
+    echo -e "alias gem5=\$GEM_PATH/build/RISCV/gem5.opt";
+  } >> "$1"
 }
 
 function test_env_vars() {
@@ -168,9 +170,9 @@ if [[ "$TEST" == "0" ]]; then
 
   echo_blue "Writing the pkl files"
   echo
-  ./pkl eval local_resources/polybench.pkl -p resources_dir=$(get_script_location) > $(get_script_location)/local_resources/polybench.json
-  ./pkl eval local_resources/resources.pkl -p resources_dir=$(get_script_location) > $(get_script_location)/local_resources/resources.json
-  ./pkl eval local_resources/sources.pkl   -p resources_dir=$(get_script_location) > $(get_script_location)/local_resources/sources.json
+  ./pkl -v eval local_resources/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/polybench.json"
+  ./pkl eval local_resources/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/resources.json"
+  ./pkl eval local_resources/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/sources.json"
 
   echo -e "$(echo_red "Removing:") PKL"
   echo
