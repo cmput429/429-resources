@@ -97,19 +97,19 @@ PPL="\033[0;35m"
 CLR="\033[0m"
 
 function echo_red() {
-  echo -e "$RED$1$CLR"
+  echo -e "$RED$1$CLR$2"
 }
 
 function echo_green() {
-  echo -e "$GREEN$1$CLR"
+  echo -e "$GREEN$1$CLR$2"
 }
 
 function echo_purple() {
-  echo -e "$PPL$1$CLR"
+  echo -e "$PPL$1$CLR$2"
 }
 
 function echo_blue() {
-  echo -e "$BLUE$1$CLR"
+  echo -e "$BLUE$1$CLR$2"
 }
 
 ########### GLOBALS ###############
@@ -130,12 +130,16 @@ while getopts ":htgci" option; do
     t) TEST=1 ;;
     c) COMPILE=1 ;;
     i) INSTALL_DEPS=1 ;;
+    *) 
+      echo_red "Invalid usage: " "available flags listed below"
+      help 
+      exit 1 ;;
   esac
 done
 
 # Shell configuration
 if [[ "$TEST" == "0" ]]; then
-  SHELL_FILE=".$(basename $SHELL)rc"
+  SHELL_FILE=".$(basename "$SHELL")rc"
   echo -e "$(echo_blue "Backing up:") $HOME$SHELL_FILE to $HOME/$SHELL_FILE.backup"
   echo
 
