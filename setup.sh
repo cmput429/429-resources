@@ -39,6 +39,31 @@ function get_script_location() {
   echo $DIR
 }
 
+function get_pkl_binary_url() {
+  local URL ARCH VERSION
+  # Get the current version of pkl by tracing the 'latest' pkl release
+  #   All this does is get the version field from the url
+  VERSION=$(curl -Ls -o /dev/null -w "%{url_effective}" "https://github.com/apple/pkl/releases/latest" | awk -F '/' '{ print $NF }')
+  URL="https://github.com/apple/pkl/releases/download/$VERSION"
+  ARCH=$(uname -m)
+  # OSTYPE is the env var for the operating system
+  if [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
+    URL="$URL/pkl-linux-amd64"
+  elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
+    URL="$URL/pkl-linux-aarch64"
+  elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "darwin" ]; then
+    URL="$URL/pkl-macos-amd64"
+  elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "darwin" ]; then
+    URL="$URL/pkl-macos-aarch64"
+  elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "alpine" ]; then
+    URL="$URL/pkl-alpine-linux-amd64"
+  else
+    echo -e "$(echo_red "Unsupported:") Combination $OSTYPE-$ARCH is not supported"
+    exit 1
+  fi
+  echo "$URL"
+}
+
 function write_env_vars() {
   echo -e "\n" >> $1
   echo "# CMPUT 429 Environment variables" >> $1
@@ -133,10 +158,10 @@ if [[ "$TEST" == "0" ]]; then
   fi
 
   # gem5 resources local configuration
-  echo -e "$(echo_blue "Downloading:") PKL, configuration as code (pkl-lang.org)"
+  echo -e "$(echo_blue "Downloading:") PKL, configuration as code (pkl-lang.org) from $(get_pkl_binary_url)"
   echo
-  
-  curl -L -o pkl -s 'https://github.com/apple/pkl/releases/download/0.26.3/pkl-linux-amd64'
+
+  curl -L -o pkl -s "$(get_pkl_binary_url)"
   chmod +x pkl
   echo -e "$(echo_green "Success:") Downloaded pkl. Version: $(./pkl --version)"
   echo
