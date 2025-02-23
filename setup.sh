@@ -22,7 +22,7 @@ function help() {
   echo -e "$(echo_blue "Syntax:") $(basename $0) [options]"
   echo_blue "Additional Options:"
   echo -e "\t\t -g      Initialize the git submodules"
-  echo -e "\t\t -m      Compile gem5"
+  echo -e "\t\t -c      Compile gem5"
   echo -e "\t\t -t      Test only"
 }
 
@@ -195,11 +195,21 @@ if [[ "$INSTALL_DEPS" == "1" ]]; then
   sudo apt install build-essential git m4 scons zlib1g zlib1g-dev \
     libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev \
     python3-dev libboost-all-dev pkg-config python3-tk
+
+else
+  echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i" 
 fi
 
 # Compile gem5 if required
 if [[ "$COMPILE" == "1" ]]; then
+  echo "$(echo_green "Compiling:") we strongly recommend that this be done in a tmux session."
+  echo "$(echo_green "Compiling:") we will now compile gem5 if no action is taken."
+  sleep 5
+  echo "$(echo_green "Compiling:") no action is being taken, proceeding with compilation" 
+
   BASE_DIR=$(get_script_location)
-  cd $BASE_DIR/gem5
-  scons build/RISCV/gem5.opt
+  cd "$BASE_DIR/gem5" || exit 1
+  PYTHON_CONFIG="$BASE_DIR/python3.13-config" scons build/RISCV/gem5.opt
+else
+  echo -e "$(echo_green "Skipping Compilation:") If you require gem5 compilation, please run the script with the -c option"
 fi
