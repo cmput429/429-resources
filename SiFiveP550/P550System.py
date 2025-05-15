@@ -32,6 +32,7 @@ from gem5.components.processors.simple_processor import SimpleProcessor
 from gem5.isas import ISA
 from gem5.resources.resource import obtain_resource,BinaryResource
 from gem5.resources.downloader import list_resources
+from gem5.simulate.exit_event import ExitEvent
 from gem5.simulate.simulator import Simulator
 from gem5.utils.requires import requires
 
@@ -63,6 +64,9 @@ requires(isa_required=ISA.RISCV)
 #  the maximum number of sims you can run
 multisim.set_num_processes(4)
 
+def terminate_print():
+    return True
+
 # We use the P550 processor with one core.
 #  see the P550Processor.py file
 #  TODO Create your processor and add it to this list
@@ -84,15 +88,20 @@ for processor in processor_list:
         memory=memory,
         cache_hierarchy=cache_hierarchy,
     )
-
-    # Set the board workload to our workload
     board.set_workload(obtain_resource("riscv-spec-mcf-run-se"))
 
+
+    simulation = Simulator(
+        board=board,
+        on_exit_event={
+            ExitEvent.MAX_INSTS : [terminate_print],
+        },
+        id=f"process_{processor.__str__()}"
+    )
+    simulation.schedule_max_insts(10**7)
+    # Set the board workload to our workload
     # Set up the simulator
     multisim.add_simulator(
-        Simulator(
-            board=board,
-            id=f"process_{processor.__str__()}"
-        )
+        simulation
     )
 

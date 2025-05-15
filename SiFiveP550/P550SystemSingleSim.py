@@ -89,6 +89,6 @@ board.set_workload(obtain_resource("riscv-spec-mcf-run-se"))
 simulator = Simulator(
     board=board,
 )
-
+simulator.schedule_max_insts(10**7)
 simulator.run()
 
