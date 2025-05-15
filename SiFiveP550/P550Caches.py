@@ -41,7 +41,7 @@ from gem5.isas import ISA
 from gem5.utils.override import *
 from gem5.components.boards.abstract_board import *
 from gem5.components.cachehierarchies.abstract_cache_hierarchy import AbstractCacheHierarchy
-from gem5.components.cachehierarchies.abstract_three_level_cache_hierarchy import AbstractThreeLevelCacheHierarchy
+from gem5.components.cachehierarchies.abstract_two_level_cache_hierarchy import AbstractTwoLevelCacheHierarchy
 from gem5.components.cachehierarchies.classic.abstract_classic_cache_hierarchy import AbstractClassicCacheHierarchy
 from m5.objects import CoherentXBar, SystemXBar, L2XBar
 from m5.objects import SnoopFilter
@@ -60,15 +60,13 @@ from P550XBar import *
 
 class L1Cache(Cache):
     """Simple L1 Cache for the P550 core"""
-
-    assoc = 4
     tag_latency = 2
     data_latency = 2
     response_latency = 2
     mshrs = 4
     tgts_per_mshr = 20
 
-    def __init__(self, size="32KiB", assoc=4):
+    def __init__(self, size, assoc):
         super().__init__()
         self.size = size
         self.assoc = assoc
@@ -85,19 +83,15 @@ class L1Cache(Cache):
 
 class L1ICache(L1Cache):
     """Simple L1 instruction cache with default values"""
-
-    def __init__(self, size="32KiB", assoc=4):
+    def __init__(self, size, assoc):
         super().__init__(size, assoc)
-
     def connectCPU(self, cpu):
         """Connect this cache's port to a CPU icache port"""
         self.cpu_side = cpu.icache_port
 
-
 class L1DCache(L1Cache):
     """Simple L1 data cache with default values"""
-
-    def __init__(self, size="32KiB", assoc=4):
+    def __init__(self, size, assoc):
         super().__init__(size, assoc)
 
     def connectCPU(self, cpu):
@@ -107,53 +101,19 @@ class L1DCache(L1Cache):
 
 class L2Cache(Cache):
     """Simple L2 Cache with default values"""
-
-    # Default parameters
-    size = "256KiB"
-    assoc = 8
     tag_latency = 20
     data_latency = 20
     response_latency = 20
     mshrs = 20
     tgts_per_mshr = 12
-
-    SimpleOpts.add_option("--l2_size", help=f"L2 cache size. Default: {size}")
-
-    def __init__(self, size=None, assoc=8):
-        super().__init__()
-        self.assoc = assoc
-        self.size = size
-
-    def connectCPUSideBus(self, bus):
-        self.cpu_side = bus.mem_side_ports
-
-    def connectMemSideBus(self, bus):
-        self.mem_side = bus.cpu_side_ports
-
-
-class L3Cache(Cache):
-    """L3 Cache for the SiFiveP550 Processor"""
-
-    # Default parameters
-    size = "2MiB"  # can be from 1-8 MB
-    assoc = 8  # this is made up
-    tag_latency = 60  # all of these are made up
-    data_latency = 60
-    response_latency = 60
-    mshrs = 60  # the number of Miss Status Holding Registers
-    tgts_per_mshr = 24  # also made up
-
-    def __init__(self, opts=None, size="2MiB", assoc=8):
+    def __init__(self, size, assoc):
         super().__init__()
         self.size = size
         self.assoc = assoc
-
     def connectCPUSideBus(self, bus):
         self.cpu_side = bus.mem_side_ports
-
     def connectMemSideBus(self, bus):
         self.mem_side = bus.cpu_side_ports
-
 
 class MMUCache(Cache):
     """
@@ -188,15 +148,14 @@ class MMUCache(Cache):
 
 
 class P550CacheHierarchy(
-    AbstractClassicCacheHierarchy, AbstractThreeLevelCacheHierarchy
+    AbstractClassicCacheHierarchy, AbstractTwoLevelCacheHierarchy
 ):
     """
     Cache hierarchy for the SiFiveP550 processor.
 
-    3-level cache hierarchy:
+    2-level cache hierarchy:
     - L1 I/D cache
     - Private L2
-    - Shared L3
 
     Also incorporates an MMU cache, although details around the actual
     MMU used in the P550 are scarce, it is a Sv39 unit.
@@ -210,19 +169,17 @@ class P550CacheHierarchy(
         system_bus: Optional[BaseXBar] = None,
         l1i_size: str = "32KiB",
         l1d_size: str = "32KiB",
-        l2_size: str = "128KiB",
-        l3_size: str = "2MiB",
+        l2_size: str = "256KiB",
         l1i_assoc: int = 4,
         l1d_assoc: int = 4,
         l2_assoc: int = 8,
-        l3_assoc: int = 8
     ) -> None:
         """
         Instantiation of the cache hierarchy.
         """
 
         AbstractClassicCacheHierarchy.__init__(self=self)
-        AbstractThreeLevelCacheHierarchy.__init__(
+        AbstractTwoLevelCacheHierarchy.__init__(
             self=self,
             l1i_size=l1i_size,
             l1i_assoc=l1i_assoc,
@@ -230,20 +187,10 @@ class P550CacheHierarchy(
             l1d_assoc=l1d_assoc,
             l2_size=l2_size,
             l2_assoc=l2_assoc,
-            l3_size=l3_size,
-            l3_assoc=l3_assoc
         )
 
         if system_bus is None:
             self.system_bus = SystemXBar(width=64)
-
-    @overrides(AbstractClassicCacheHierarchy)
-    def get_mem_side_port(self) -> Port:
-        return self.l2l3_membus.mem_side_ports
-
-    @overrides(AbstractClassicCacheHierarchy)
-    def get_cpu_side_port(self) -> Port:
-        return self.l1l2_membus.cpu_side_ports
 
     @overrides(AbstractCacheHierarchy)
     def incorporate_cache(self, board: AbstractBoard) -> None:
@@ -291,10 +238,6 @@ class P550CacheHierarchy(
             for _ in range(cores)
         ]
 
-        self.l3bus = P550L3XBar()
-
-        self.l3cache = L3Cache(size=self._l3_size, assoc=self._l3_assoc)
-
         # ITLB Page walk caches
         self.iptw_caches = [
             MMUCache(size="8KiB", writeback_clean=False)
@@ -323,10 +266,7 @@ class P550CacheHierarchy(
 
             # L2 cache connection
             self.l2caches[i].cpu_side = self.l2bus[i].mem_side_ports
-            self.l2caches[i].mem_side = self.l3bus.cpu_side_ports
+            self.l2caches[i].mem_side = self.system_bus.cpu_side_ports
 
             cpu.connect_interrupt()
 
-        # L3 Cache connection
-        self.l3cache.cpu_side = self.l3bus.mem_side_ports
-        self.l3cache.mem_side = self.system_bus.cpu_side_ports

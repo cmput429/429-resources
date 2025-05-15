@@ -42,20 +42,6 @@ from common import SimpleOpts
 # Some specific options for caches
 # For all options see src/mem/cache/BaseCache.py
 
-class P550L3XBar(CoherentXBar):
-    # By default this is a 256 bit crossbar
-    width = 64
-
-    # We will assume some latency to get through
-    #  this crossbar, since the L2 caches will be
-    #  connected on-chip but globally
-    frontend_latency = 5
-    forward_latency = 3
-    response_latency = 5
-    snoop_response_latency = 3
-
-    point_of_unification = True
-
 
 class P550L2XBar(CoherentXBar):
     width = 32
