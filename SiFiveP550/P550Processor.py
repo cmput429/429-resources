@@ -16,6 +16,7 @@ class P550Core(BaseCPUCore):
     def __init__(
         self,
         core_id: int,
+        predictor: BranchPredictor
     ) -> None:
         requires(isa_required=ISA.RISCV)
 
@@ -25,7 +26,8 @@ class P550Core(BaseCPUCore):
         # The basic OOO CPU
         cpu = RiscvO3CPU(
             fuPool=fu_pool,
-            cpu_id=core_id
+            cpu_id=core_id,
+            branchPred=predictor
         )
 
         # Inheritance requirements
@@ -48,7 +50,8 @@ class P550Processor(BaseCPUProcessor):
 
     def __init__(
         self,
-        num_cores: int
+        num_cores: int,
+        predictor: BranchPredictor
     ) -> None:
         super().__init__(
             # Initialize as many cores as we want
