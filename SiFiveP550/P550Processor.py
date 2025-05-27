@@ -1,3 +1,7 @@
+""" 
+The Processor
+"""
+
 from gem5.isas import ISA
 from gem5.components.processors.base_cpu_core import BaseCPUCore
 from gem5.components.processors.base_cpu_processor import BaseCPUProcessor
