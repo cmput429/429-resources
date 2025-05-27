@@ -123,7 +123,7 @@ hidden binaries = new Mapping {
     binary = "mcf_r_base"
     md5sum = "62b032e61433fbeef498b61753fdd5a6"
     arguments = new Listing {
-      "\(resources_dir)/local_resources/inputs/mcf/mcf1.in"
+      "\(resources_dir)/benchmarks/inputs/mcf/mcf1.in"
     }
   }
   ["conv1-scalar"] {
