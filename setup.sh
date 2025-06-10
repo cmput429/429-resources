@@ -174,7 +174,7 @@ if [[ "$TEST" == "0" ]]; then
 
   echo_blue "Writing the pkl files"
   echo
-  ./pkl -v eval local_resources/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/polybench.json"
+  ./pkl eval local_resources/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/polybench.json"
   ./pkl eval local_resources/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/resources.json"
   ./pkl eval local_resources/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/sources.json"
 
