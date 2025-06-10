@@ -16,7 +16,7 @@ class Resource {
               "Louis-Noel Pouchet"
               "Tomofumi Yuki"
       }
-      gem5_versions: Listing<String> = new Listing {"24.0" "24.1"}
+      gem5_versions: Listing<String> = new Listing {"24.0" "24.1" "25.0"}
       source_url: String
       resource_version: String = "1.0.0"
       example_usage: String
