@@ -118,6 +118,14 @@ hidden binaries = new Mapping {
       "854x480"
     }
   }
+  ["lbm"] {
+    name = "lbm"
+    binary = "lbm_r_base"
+    md5sum = "fe4f19b4c4ae13b367b489aaecb8c1b2"
+    arguments = new Listing {
+      "\(resources_dir)/benchmarks/inputs/lbm/lbm1.in"
+    }
+  }
   ["mcf"] {
     name = "mcf"
     binary = "mcf_r_base"
