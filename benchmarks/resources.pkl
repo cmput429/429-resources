@@ -79,7 +79,7 @@ hidden binaries = new Mapping {
     binary = "cpugcc_r_base"
     md5sum = "476c03e9c3c937f29c1cd5025728bdfb"
     arguments = new Listing {
-      "\(resources_dir)/local_resources/inputs/gcc/lbm.c"
+      "\(resources_dir)/benchmarks/inputs/gcc/lbm.c"
       "-o"
       "gcc_tmp.o"
     }
@@ -89,7 +89,7 @@ hidden binaries = new Mapping {
     binary = "cpugcc_r_base"
     md5sum = "476c03e9c3c937f29c1cd5025728bdfb"
     arguments = new Listing {
-      "\(resources_dir)/local_resources/inputs/gcc/mcf.c"
+      "\(resources_dir)/benchmarks/inputs/gcc/mcf.c"
       "-o"
       "gcc_tmp.o"
     }
@@ -102,7 +102,7 @@ hidden binaries = new Mapping {
       "-p 1"
       "-B 1000"
       "-o bb.mkv"
-      "\(resources_dir)/local_resources/inputs/x264/BuckBunny.264"
+      "\(resources_dir)/benchmarks/inputs/x264/BuckBunny.264"
       "854x480"
     }
   }
@@ -114,8 +114,16 @@ hidden binaries = new Mapping {
       "-p 1"
       "-B 1000"
       "-o bb.mkv"
-      "\(resources_dir)/local_resources/inputs/x264/BuckBunny.264"
+      "\(resources_dir)/benchmarks/inputs/x264/BuckBunny.264"
       "854x480"
+    }
+  }
+  ["lbm"] {
+    name = "lbm"
+    binary = "lbm_r_base"
+    md5sum = "fe4f19b4c4ae13b367b489aaecb8c1b2"
+    arguments = new Listing {
+      "\(resources_dir)/benchmarks/inputs/lbm/lbm1.in"
     }
   }
   ["mcf"] {
@@ -123,7 +131,7 @@ hidden binaries = new Mapping {
     binary = "mcf_r_base"
     md5sum = "62b032e61433fbeef498b61753fdd5a6"
     arguments = new Listing {
-      "\(resources_dir)/local_resources/inputs/mcf/mcf1.in"
+      "\(resources_dir)/benchmarks/inputs/mcf/mcf1.in"
     }
   }
   ["conv1-scalar"] {
@@ -164,7 +172,7 @@ resources = new Listing {
       tags = new Listing {"spec"}
       md5sum = "\(_binary.md5sum)"
       source = "429bin/\(_binary.binary).riscv"
-      url = "file://\(resources_dir)/local_resources/429bin/\(_binary.binary).riscv"
+      url = "file://\(resources_dir)/benchmarks/429bin/\(_binary.binary).riscv"
       source_url = ""
       example_usage = "obtain_resource(\"riscv-spec-\(_binary.name)-bin\")"
     }

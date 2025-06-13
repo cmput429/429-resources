@@ -114,7 +114,7 @@ resources = new Listing{
       tags = new Listing {"polybench"}
       md5sum = "\(_md5sum)"
       source = "polybin/\(_binary).riscv"
-      url = "file://\(resources_dir)/local_resources/polybin/\(_binary).riscv"
+      url = "file://\(resources_dir)/benchmarks/polybin/\(_binary).riscv"
       source_url = if (_binary is "3mm"|"2mm"|"atax"|"bicg"|"doitgen"|"mvt")
                      "https://github.com/MatthiasJReisinger/PolyBenchC-4.2.1/tree/master/linear-algebra/kernels/\(_binary)"
                    else if (_binary is "gemm"|"gemver"|"gesummv"|"symm"|"syr2k"|"syrk"|"trmm")

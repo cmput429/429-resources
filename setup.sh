@@ -72,7 +72,7 @@ function write_env_vars() {
     echo -e "export GEM_PATH=\$C429_RESOURCES/gem5";
     echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs";
     echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests";
-    echo -e "export GEM5_CONFIG=\$C429_RESOURCES/local_resources/sources.json";
+    echo -e "export GEM5_CONFIG=\$C429_RESOURCES/benchmarks/sources.json";
     echo -e "export CC=gcc-11";
     echo -e "export CXX=g++-11";
     echo -e "alias gem5=\$GEM_PATH/build/RISCV/gem5.opt";
@@ -174,9 +174,9 @@ if [[ "$TEST" == "0" ]]; then
 
   echo_blue "Writing the pkl files"
   echo
-  ./pkl eval local_resources/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/polybench.json"
-  ./pkl eval local_resources/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/resources.json"
-  ./pkl eval local_resources/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/local_resources/sources.json"
+  ./pkl eval benchmarks/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/polybench.json"
+  ./pkl eval benchmarks/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/resources.json"
+  ./pkl eval benchmarks/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/sources.json"
 
   echo -e "$(echo_red "Removing:") PKL"
   echo

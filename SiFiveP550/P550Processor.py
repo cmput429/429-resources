@@ -1,7 +1,12 @@
+""" 
+The Processor
+"""
+
 from gem5.isas import ISA
 from gem5.components.processors.base_cpu_core import BaseCPUCore
 from gem5.components.processors.base_cpu_processor import BaseCPUProcessor
 from gem5.utils.requires import requires
+from P550CacheHierarchy import *
 
 from m5.objects import *
 
@@ -16,6 +21,7 @@ class P550Core(BaseCPUCore):
     def __init__(
         self,
         core_id: int,
+        predictor: BranchPredictor
     ) -> None:
         requires(isa_required=ISA.RISCV)
 
@@ -25,7 +31,8 @@ class P550Core(BaseCPUCore):
         # The basic OOO CPU
         cpu = RiscvO3CPU(
             fuPool=fu_pool,
-            cpu_id=core_id
+            cpu_id=core_id,
+            branchPred=predictor
         )
 
         # Inheritance requirements
@@ -48,12 +55,13 @@ class P550Processor(BaseCPUProcessor):
 
     def __init__(
         self,
-        num_cores: int
+        num_cores: int,
+        predictor: BranchPredictor = LocalBP()
     ) -> None:
         super().__init__(
             # Initialize as many cores as we want
             cores=[
-                P550Core(core_id=i)
+                P550Core(core_id=i, predictor=predictor)
                 for i in range(num_cores)
             ]
         )

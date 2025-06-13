@@ -1,1 +1,0 @@
-/home/ayrton.chilibeck/429/429-resources/scripts/Spec.py
