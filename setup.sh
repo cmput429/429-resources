@@ -202,4 +202,4 @@ echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
 echo "$(echo_green "Compiling:") This does not check for dependencies"
 
 BASE_DIR=$(get_script_location)
-tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" scons build/RISCV/gem5.opt"
+tmux new -d "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" scons build/RISCV/gem5.opt"
