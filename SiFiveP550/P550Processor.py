@@ -6,7 +6,6 @@ from gem5.isas import ISA
 from gem5.components.processors.base_cpu_core import BaseCPUCore
 from gem5.components.processors.base_cpu_processor import BaseCPUProcessor
 from gem5.utils.requires import requires
-from P550CacheHierarchy import *
 
 from m5.objects import *
 

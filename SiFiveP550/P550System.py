@@ -24,7 +24,7 @@ thispath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(thispath)
 ######
 
-from P550Caches import *
+from P550CacheHierarchy import *
 from P550Processor import *
 
 # This check ensures the gem5 binary is compiled to the RISCV ISA target. If not,
@@ -61,7 +61,7 @@ for processor in processor_list:
         memory=memory,
         cache_hierarchy=cache_hierarchy,
     )
-    board.set_workload(obtain_resource("riscv-spec-mcf-run-se"))
+    board.set_workload(obtain_resource("riscv-spec-mcf-run-se", clients=["resources"]))
 
 
     simulation = Simulator(
