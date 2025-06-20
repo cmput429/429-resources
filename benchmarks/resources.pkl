@@ -45,7 +45,7 @@ class Workload {
       additional_params: Params
       source_url: String
       resource_version: String = "1.0.0"
-      gem5_versions: Listing<String> = new Listing {"24.0" "24.1"}
+      gem5_versions: Listing<String> = new Listing {"24.0" "24.1" "25.0"}
       example_usage: String
 }
 
@@ -61,7 +61,7 @@ class Suite {
       category: String = "suite"
       resource_version: String = "1.0.0"
       workloads: Listing<ShortWorkload>
-      gem5_versions: Listing<String> = new Listing {"24.0" "24.1"}
+      gem5_versions: Listing<String> = new Listing {"24.0" "24.1" "25.0"}
       example_usage: String
       tags: Listing<String>
       author: Listing<String> = new Listing {
