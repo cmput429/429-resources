@@ -123,7 +123,11 @@ hidden binaries = new Mapping {
     binary = "lbm_r_base"
     md5sum = "fe4f19b4c4ae13b367b489aaecb8c1b2"
     arguments = new Listing {
-      "\(resources_dir)/benchmarks/inputs/lbm/lbm1.in"
+      "20"
+      "reference.dat"
+      "0"
+      "1"
+      "\(resources_dir)/benchmarks/inputs/lbm/100_100_130_cf_a.of"
     }
   }
   ["mcf"] {
