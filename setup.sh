@@ -47,16 +47,16 @@ function get_pkl_binary_url() {
   # OSTYPE is the env var for the operating system
   if [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
     URL="$URL/pkl-linux-amd64"
-  elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
-    URL="$URL/pkl-linux-aarch64"
-  elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "darwin" ]; then
-    URL="$URL/pkl-macos-amd64"
-  elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "darwin" ]; then
-    URL="$URL/pkl-macos-aarch64"
-  elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "alpine" ]; then
-    URL="$URL/pkl-alpine-linux-amd64"
+  # elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
+  #   URL="$URL/pkl-linux-aarch64"
+  # elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "darwin" ]; then
+  #   URL="$URL/pkl-macos-amd64"
+  # elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "darwin" ]; then
+  #   URL="$URL/pkl-macos-aarch64"
+  # elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "alpine" ]; then
+  #   URL="$URL/pkl-alpine-linux-amd64"
   else
-    echo -e "$(echo_red "Unsupported:") Combination $OSTYPE-$ARCH is not supported"
+    echo -e "$(echo_red "Unsupported:") Combination $OSTYPE-$ARCH is not supported by this script"
     exit 1
   fi
   echo "$URL"
@@ -71,6 +71,7 @@ function write_env_vars() {
     echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs";
     echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests";
     echo -e "export GEM5_CONFIG=\$C429_RESOURCES/benchmarks/sources.json";
+    echo -e "export GEM5_RESOURCE_DIR=/local/scratch/.gem5-resources";
     echo -e "export CC=gcc-11";
     echo -e "export CXX=g++-11";
     echo -e "alias gem5=\$GEM_PATH/build/RISCV/gem5.opt";
@@ -78,12 +79,16 @@ function write_env_vars() {
 }
 
 function test_env_vars() {
-  local PRESENT="$C429_RESOURCES$GEM_PATH$GEM_CONFIGS$GEM_TESTS$GEM5_CONFIG$CC$CXX"
+  local PRESENT="$C429_RESOURCES$GEM_PATH$GEM_CONFIGS$GEM_TESTS$GEM5_CONFIG$CC$CXX$GEM5_RESOURCE_DIR"
   if [[ "$PRESENT" == "" ]]; then
     echo "0"
     return
   fi
   echo "1"
+}
+
+function install_gem5() {
+  return  
 }
 
 ########## Prettification ###########
@@ -104,6 +109,10 @@ function echo_green() {
 
 function echo_purple() {
   echo -e "$PPL$1$CLR$2"
+}
+
+function echo_yellow() {
+  echo -e "$YEL$1$CLR$2"
 }
 
 function echo_blue() {
@@ -198,8 +207,14 @@ else
   echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i" 
 fi
 
+echo "$(echo_green "Compiling:") cloning the gem5 repo"
+git submodule init
+git submodule update > /dev/null
+
 echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
 echo "$(echo_green "Compiling:") This does not check for dependencies"
+echo "$(echo_yellow "NOTE:") Use the shortcut CTRL+B;D to exit the tmux session"
+sleep 5
 
 BASE_DIR=$(get_script_location)
-tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" scons build/RISCV/gem5.opt"
+tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true scons build/ALL/gem5.opt"
