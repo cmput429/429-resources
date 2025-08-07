@@ -201,6 +201,32 @@ resources = new Listing {
       example_usage = "obtain_resource(\"riscv-spec-\(_binary.name)-run-se\")"
     }
   }
+  (Resource) {
+    category = "disk-image"
+    id = "gpufs-disk-image"
+    description = "Disk image for GPUFS"
+    architecture = "x86"
+    size = 1
+    tags = new Listing {"spec"}
+    md5sum = ""
+    source = ""
+    url = ""
+    source_url = ""
+    example_usage = "obtain_resource(\"gpufs-disk-image\")"
+  }
+  (Resource) {
+    category = "kernel"
+    id = "gpufs-kernel"
+    description = "Kernel for GPUFS"
+    architecture = "x86"
+    size = 1
+    tags = new Listing {"spec"}
+    md5sum = ""
+    source = ""
+    url = ""
+    source_url = ""
+    example_usage = "obtain_resource(\"gpufs-kernel\")"
+  }
 }
 
 output {
