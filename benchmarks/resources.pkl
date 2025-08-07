@@ -164,7 +164,6 @@ hidden binaries = new Mapping {
   }
 }
 
-
 resources = new Listing {
   for (_binary in binaries) {
     (Resource) {
@@ -207,10 +206,10 @@ resources = new Listing {
     description = "Disk image for GPUFS"
     architecture = "x86"
     size = 1
-    tags = new Listing {"spec"}
-    md5sum = ""
-    source = ""
-    url = ""
+    tags = new Listing {"gpufs" "large"}
+    md5sum = "39b2d9c21509fc0cf48d860bb2bd5f58"
+    source = "https://github.com/gem5/gem5-resources"
+    url = "file:///cshome/cmput429/.gem5-resources/gpufs-disk-image"
     source_url = ""
     example_usage = "obtain_resource(\"gpufs-disk-image\")"
   }
@@ -220,11 +219,11 @@ resources = new Listing {
     description = "Kernel for GPUFS"
     architecture = "x86"
     size = 1
-    tags = new Listing {"spec"}
-    md5sum = ""
+    tags = new Listing {"gpufs"}
+    md5sum = "c3b9ef3102b5f73dcabb025c2d98105b"
     source = ""
-    url = ""
-    source_url = ""
+    url = "file://\(resources_dir)/benchmarks/429bin/gpufs-kernel"
+    source_url = "https://github.com/gem5/gem5-resources"
     example_usage = "obtain_resource(\"gpufs-kernel\")"
   }
 }
