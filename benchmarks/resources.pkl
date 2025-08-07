@@ -1,6 +1,6 @@
 resources_dir = read("prop:resources_dir")
 
-class Resource {
+open class Resource {
       category: String
       id: String
       description: String
@@ -19,6 +19,11 @@ class Resource {
       source_url: String
       resource_version: String = "1.0.0"
       example_usage: String
+}
+
+class DiskImageResource extends Resource {
+      category: String = "disk-image"
+      root_partition: String = "1"
 }
 
 class Params {
@@ -200,12 +205,11 @@ resources = new Listing {
       example_usage = "obtain_resource(\"riscv-spec-\(_binary.name)-run-se\")"
     }
   }
-  (Resource) {
-    category = "disk-image"
+  (DiskImageResource) {
     id = "gpufs-disk-image"
     description = "Disk image for GPUFS"
-    architecture = "x86"
-    size = 1
+    architecture = "X86"
+    size = 58720256000
     tags = new Listing {"gpufs" "large"}
     md5sum = "39b2d9c21509fc0cf48d860bb2bd5f58"
     source = "https://github.com/gem5/gem5-resources"
@@ -217,7 +221,7 @@ resources = new Listing {
     category = "kernel"
     id = "gpufs-kernel"
     description = "Kernel for GPUFS"
-    architecture = "x86"
+    architecture = "X86"
     size = 1
     tags = new Listing {"gpufs"}
     md5sum = "c3b9ef3102b5f73dcabb025c2d98105b"
@@ -225,6 +229,19 @@ resources = new Listing {
     url = "file://\(resources_dir)/benchmarks/429bin/gpufs-kernel"
     source_url = "https://github.com/gem5/gem5-resources"
     example_usage = "obtain_resource(\"gpufs-kernel\")"
+  }
+  (Resource) {
+    category = "binary"
+    id = "gpufs-square"
+    description = "Simple program that squares a vector"
+    architecture = "X86"
+    size = 38688
+    tags = new Listing {"gpufs"}
+    md5sum = "dd12fe4e37b432e34af36e2c94f2e86a"
+    source = "https://github.com/gem5/gem5-resources"
+    source_url = ""
+    url = "file://\(resources_dir)/benchmarks/429bin/square.default"
+    example_usage = "obtain_resource(\"gpufs-square\")"
   }
 }
 
