@@ -217,4 +217,4 @@ echo "$(echo_yellow "NOTE:") Use the shortcut CTRL+B;D to exit the tmux session"
 sleep 5
 
 BASE_DIR=$(get_script_location)
-tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true scons build/ALL/gem5.opt"
+tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt"
