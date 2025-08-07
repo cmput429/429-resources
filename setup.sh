@@ -2,22 +2,22 @@
 
 function help() {
   echo_green "Welcome to CMPUT 429"
-  echo -e "\t\tI'm here to help you setup, to do so I will need to:"
-  echo -e "\t\t - Create the following environment variables"
-  echo -e "\t\t   - C429_RESOURCES: The root of this git repo"
-  echo -e "\t\t   - GEM_PATH: The path for gem5"
-  echo -e "\t\t   - GEM_CONFIGS: The path to gem5/configs"
-  echo -e "\t\t   - GEM_TESTS: The path to the gem5 tests"
-  echo -e "\t\t   - GEM5_CONFIG: Our special resources config file"
-  echo -e "\t\t   - CC: The default C compiler (must be gcc-11)"
-  echo -e "\t\t   - CXX: Default C++ compiler (must be g++-11)"
-  echo -e "\t\t   - Write the environment variables to your default shell"
-  echo -e "\t\t      file (.bashrc, .zshrc, etc) if not present"
-  echo -e "\t\t - Configure the local resources on your profile"
-  echo -e "\t\t   - Install pkl (pkl-lang.org) temporarily"
-  echo -e "\t\t   - Compile some configuration files"
-  echo -e "\t\t   - Create an alias to execute gem5 easier"
-  echo -e "\t\t - Test the configuration"
+  echo -e "\tI'm here to help you setup, to do so I will need to:"
+  echo -e "\t - Create the following environment variables"
+  echo -e "\t   - C429_RESOURCES: The root of this git repo"
+  echo -e "\t   - GEM_PATH: The path for gem5"
+  echo -e "\t   - GEM_CONFIGS: The path to gem5/configs"
+  echo -e "\t   - GEM_TESTS: The path to the gem5 tests"
+  echo -e "\t   - GEM5_CONFIG: Our special resources config file"
+  echo -e "\t   - CC: The default C compiler (must be gcc-11)"
+  echo -e "\t   - CXX: Default C++ compiler (must be g++-11)"
+  echo -e "\t   - Write the environment variables to your default shell"
+  echo -e "\t      file (.bashrc, .zshrc, etc) if not present"
+  echo -e "\t - Configure the local resources on your profile"
+  echo -e "\t   - Install pkl (pkl-lang.org) temporarily"
+  echo -e "\t   - Compile some configuration files"
+  echo -e "\t   - Create an alias to execute gem5 easier"
+  echo -e "\t - Test the configuration"
   echo ""
   echo -e "$(echo_blue "Syntax:") $(basename $0) [options]"
   echo_blue "Additional Options:"
@@ -208,6 +208,7 @@ else
 fi
 
 echo "$(echo_green "Compiling:") cloning the gem5 repo"
+echo
 git submodule init
 git submodule update > /dev/null
 
@@ -218,3 +219,6 @@ sleep 5
 
 BASE_DIR=$(get_script_location)
 tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt"
+echo
+echo "$(echo_green "Set Up Complete!") You can close this terminal, compilation will complete in the background."
+
