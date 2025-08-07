@@ -2,22 +2,22 @@
 
 function help() {
   echo_green "Welcome to CMPUT 429"
-  echo -e "\t\tI'm here to help you setup, to do so I will need to:"
-  echo -e "\t\t - Create the following environment variables"
-  echo -e "\t\t   - C429_RESOURCES: The root of this git repo"
-  echo -e "\t\t   - GEM_PATH: The path for gem5"
-  echo -e "\t\t   - GEM_CONFIGS: The path to gem5/configs"
-  echo -e "\t\t   - GEM_TESTS: The path to the gem5 tests"
-  echo -e "\t\t   - GEM5_CONFIG: Our special resources config file"
-  echo -e "\t\t   - CC: The default C compiler (must be gcc-11)"
-  echo -e "\t\t   - CXX: Default C++ compiler (must be g++-11)"
-  echo -e "\t\t   - Write the environment variables to your default shell"
-  echo -e "\t\t      file (.bashrc, .zshrc, etc) if not present"
-  echo -e "\t\t - Configure the local resources on your profile"
-  echo -e "\t\t   - Install pkl (pkl-lang.org) temporarily"
-  echo -e "\t\t   - Compile some configuration files"
-  echo -e "\t\t   - Create an alias to execute gem5 easier"
-  echo -e "\t\t - Test the configuration"
+  echo -e "\tI'm here to help you setup, to do so I will need to:"
+  echo -e "\t - Create the following environment variables"
+  echo -e "\t   - C429_RESOURCES: The root of this git repo"
+  echo -e "\t   - GEM_PATH: The path for gem5"
+  echo -e "\t   - GEM_CONFIGS: The path to gem5/configs"
+  echo -e "\t   - GEM_TESTS: The path to the gem5 tests"
+  echo -e "\t   - GEM5_CONFIG: Our special resources config file"
+  echo -e "\t   - CC: The default C compiler (must be gcc-11)"
+  echo -e "\t   - CXX: Default C++ compiler (must be g++-11)"
+  echo -e "\t   - Write the environment variables to your default shell"
+  echo -e "\t      file (.bashrc, .zshrc, etc) if not present"
+  echo -e "\t - Configure the local resources on your profile"
+  echo -e "\t   - Install pkl (pkl-lang.org) temporarily"
+  echo -e "\t   - Compile some configuration files"
+  echo -e "\t   - Create an alias to execute gem5 easier"
+  echo -e "\t - Test the configuration"
   echo ""
   echo -e "$(echo_blue "Syntax:") $(basename $0) [options]"
   echo_blue "Additional Options:"
@@ -47,16 +47,16 @@ function get_pkl_binary_url() {
   # OSTYPE is the env var for the operating system
   if [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
     URL="$URL/pkl-linux-amd64"
-  elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
-    URL="$URL/pkl-linux-aarch64"
-  elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "darwin" ]; then
-    URL="$URL/pkl-macos-amd64"
-  elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "darwin" ]; then
-    URL="$URL/pkl-macos-aarch64"
-  elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "alpine" ]; then
-    URL="$URL/pkl-alpine-linux-amd64"
+  # elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "linux-gnu" ]; then
+  #   URL="$URL/pkl-linux-aarch64"
+  # elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "darwin" ]; then
+  #   URL="$URL/pkl-macos-amd64"
+  # elif [ "$ARCH" = "aarch64" ] && [ "$OSTYPE" = "darwin" ]; then
+  #   URL="$URL/pkl-macos-aarch64"
+  # elif [ "$ARCH" = "x86_64" ] && [ "$OSTYPE" = "alpine" ]; then
+  #   URL="$URL/pkl-alpine-linux-amd64"
   else
-    echo -e "$(echo_red "Unsupported:") Combination $OSTYPE-$ARCH is not supported"
+    echo -e "$(echo_red "Unsupported:") Combination $OSTYPE-$ARCH is not supported by this script"
     exit 1
   fi
   echo "$URL"
@@ -71,6 +71,7 @@ function write_env_vars() {
     echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs";
     echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests";
     echo -e "export GEM5_CONFIG=\$C429_RESOURCES/benchmarks/sources.json";
+    echo -e "export GEM5_RESOURCE_DIR=/local/scratch/.gem5-resources";
     echo -e "export CC=gcc-11";
     echo -e "export CXX=g++-11";
     echo -e "alias gem5=\$GEM_PATH/build/RISCV/gem5.opt";
@@ -78,12 +79,16 @@ function write_env_vars() {
 }
 
 function test_env_vars() {
-  local PRESENT="$C429_RESOURCES$GEM_PATH$GEM_CONFIGS$GEM_TESTS$GEM5_CONFIG$CC$CXX"
+  local PRESENT="$C429_RESOURCES$GEM_PATH$GEM_CONFIGS$GEM_TESTS$GEM5_CONFIG$CC$CXX$GEM5_RESOURCE_DIR"
   if [[ "$PRESENT" == "" ]]; then
     echo "0"
     return
   fi
   echo "1"
+}
+
+function install_gem5() {
+  return  
 }
 
 ########## Prettification ###########
@@ -104,6 +109,10 @@ function echo_green() {
 
 function echo_purple() {
   echo -e "$PPL$1$CLR$2"
+}
+
+function echo_yellow() {
+  echo -e "$YEL$1$CLR$2"
 }
 
 function echo_blue() {
@@ -198,8 +207,18 @@ else
   echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i" 
 fi
 
+echo "$(echo_green "Compiling:") cloning the gem5 repo"
+echo
+git submodule init
+git submodule update > /dev/null
+
 echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
 echo "$(echo_green "Compiling:") This does not check for dependencies"
+echo "$(echo_yellow "NOTE:") Use the shortcut CTRL+B;D to exit the tmux session"
+sleep 5
 
 BASE_DIR=$(get_script_location)
-tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" scons build/RISCV/gem5.opt"
+tmux new "cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt"
+echo
+echo "$(echo_green "Set Up Complete!") You can close this terminal, compilation will complete in the background."
+
