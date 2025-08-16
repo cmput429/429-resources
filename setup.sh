@@ -94,22 +94,51 @@ function test_env_vars() {
   echo "1"
 }
 
-function download_pkl() {
-  local PKL_URL
-  PKL_URL="$(get_pkl_binary_url)"
-  PKL_CHECKSUM="sha256:0882dbb511735b7282e9708399e5a372efc966827e45f9ffbc4034ca77f8f65a"
 
-  # gem5 resources local configuration
+function download_pkl() {
+  local PKL_URL EXPECTED_MD5
+  PKL_URL="$(get_pkl_binary_url)"
+  EXPECTED_MD5="4fd3cee7eff054c6b85642c0d8eae545"
+
+  # Check if pkl file already exists
+  if [[ -f "./pkl" ]]; then
+    echo -e "$(echo_blue "Found:") PKL file already exists, checking checksum..."
+    local CURRENT_MD5
+    CURRENT_MD5=$(md5sum ./pkl | cut -d' ' -f1)
+    
+    if [[ "$CURRENT_MD5" == "$EXPECTED_MD5" ]]; then
+      echo -e "$(echo_green "Success:") PKL checksum verified, skipping download"
+      echo
+      return
+    else
+      echo -e "$(echo_yellow "Warning:") PKL checksum mismatch, re-downloading..."
+      rm -f ./pkl
+    fi
+  fi
+
+  # Download pkl
   echo -e "$(echo_blue "Downloading:") PKL, configuration as code (pkl-lang.org) from $PKL_URL"
   echo
 
-  curl -Ls -o pkl -s "$PKL_URL"
+  curl -L -o pkl -s "$PKL_URL"
   chmod +x pkl
-  echo -e "$(echo_green "Success:") Downloaded pkl. Version: $(./pkl --version)"
-  echo
 
- # wget -O pkl "$PKL_URL"
+  # Verify checksum for downloaded file
+  local DOWNLOADED_MD5
+  DOWNLOADED_MD5=$(md5sum ./pkl | cut -d' ' -f1)
+  
+  if [[ "$DOWNLOADED_MD5" == "$EXPECTED_MD5" ]]; then
+    echo -e "$(echo_green "Success:") Downloaded pkl. Version: $(./pkl --version)"
+    echo
+  else
+    echo -e "$(echo_red "Error:") PKL checksum verification failed!"
+    echo -e "         Expected: $EXPECTED_MD5"
+    echo -e "         Got:      $DOWNLOADED_MD5"
+    rm -f ./pkl
+    exit 1
+  fi
 }
+
 
 function install_gem5() {
   return  
@@ -186,10 +215,6 @@ function setup_pkl_configuration() {
   ./pkl eval benchmarks/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/resources.json"
   ./pkl eval benchmarks/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/sources.json"
 
-  echo -e "$(echo_red "Removing:") PKL"
-  echo
-  rm pkl
-
   echo_green "Remember to source your shell again!"
 }
 
@@ -216,14 +241,34 @@ function setup_gem5_compilation() {
 
   echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
   echo "$(echo_green "Compiling:") This does not check for dependencies"
-  echo "$(echo_yellow "NOTE:") Use the shortcut CTRL+B;D to exit the tmux session"
+  echo "$(echo_yellow "NOTE:") You are about to enter a tmux session. To exit:"
+  echo "$(echo_yellow "      ") - Press CTRL+B, then press D (detach and keep running)"
+  echo "$(echo_yellow "      ") - Or press CTRL+C to stop compilation, then type 'exit'"
+  echo "$(echo_blue "INFO:") Starting in 5 seconds..."
   sleep 5
 
   BASE_DIR=$(get_script_location)
-  tmux new "bash -c \"cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" nice -n 13 scons build/ALL/gem5.opt; exec bash\""
+  tmux new -s gem5_compilation "bash -c '
+    clear
+    echo -e \"\033[0;93m========================================\033[0m\"
+    echo -e \"\033[0;93m  TMUX SESSION - GEM5 COMPILATION\033[0m\"  
+    echo -e \"\033[0;93m========================================\033[0m\"
+    echo -e \"\033[0;94mTo exit this session:\033[0m\"
+    echo -e \"\033[0;94m  • Press CTRL+B, then D (detach)\033[0m\"
+    echo -e \"\033[0;94m  • Or CTRL+C then type exit\033[0m\"
+    echo -e \"\033[0;93m========================================\033[0m\"
+    echo
+    echo -e \"\033[0;92mStarting compilation in 3 seconds...\033[0m\"
+    sleep 3
+    cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt
+    echo
+    echo -e \"\033[0;92mCompilation finished! Press CTRL+B then D to exit, or type exit\033[0m\"
+    exec \$SHELL
+  '"
   echo
   echo "$(echo_green "Set Up Complete!") You can close this terminal, compilation will complete in the background."
 }
+
 
 function run_main_setup() {
   configure_shell
