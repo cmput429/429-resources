@@ -190,17 +190,17 @@ hidden a5_binaries = new Mapping {
     md5sum = "4964ca127e9f36422ef3b32b69d80b3f"
   }
   ["vector-naive-matmul"] {
-    name = "vector-naive-matmul"
+    name = "vectorized-naive-matmul"
     binary = "riscv-vectorized-naive-matmul"
     md5sum = "d66e48ba80c0009e5d9050d4deb80565"
   }
   ["vector-interchange-matmul"] {
-    name = "vector-interchange-matmul"
+    name = "vectorized-interchange-matmul"
     binary = "riscv-vectorized-interchange-matmul"
     md5sum = "2e071a65a2b32afddb75ef74e03b04e7"
   }
   ["vector-interchange-blocking-matmul"] {
-    name = "vector-interchange-blocking-matmul"
+    name = "vectorized-interchange-blocking-matmul"
     binary = "riscv-vectorized-interchange-blocking-matmul"
     md5sum = "60352dfa011fd6fa187c92af9cbc40c9"
   }
@@ -253,7 +253,7 @@ resources = new Listing {
       tags = new Listing {"a5"}
       md5sum = "\(_binary.md5sum)"
       source = "\(resources_dir)/sources/a5/cpu/matmul.c"
-      url = "file://\(resources_dir)/429bin/\(_binary.name).riscv"
+      url = "file://\(resources_dir)/benchmarks/429bin/riscv-\(_binary.name).riscv"
       source_url = ""
       example_usage = "obtain_resource(\"a5/\(_binary.name)-bin\")"
     }
@@ -261,7 +261,7 @@ resources = new Listing {
     (Workload) {
       id = "\(_binary.name)-wkld"
       description = "A5 benchmark run configuration for RISC-V."
-      `function` = "set_a5_binary_workload"
+      `function` = "set_se_binary_workload"
       resources {
         ["binary"] = (ShortResource) {
           id = "\(_binary.name)-bin"
