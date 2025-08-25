@@ -52,7 +52,7 @@ simulator = Simulator(
 )
 
 # Schedule number of instructions to run
-simulator.schedule_max_insts(10**8)
+simulator.schedule_max_insts(10**7)
 
 # Run simulator
 simulator.run()
