@@ -16,3 +16,4 @@ WARNING: if using docker container, make sure you have it set up so it can point
 If you are using docker, you should be using a command like 
 
     `docker run --rm -u 1000:1000 -v $GEM_PATH$:$GEM_PATH -w $PWD ghcr.io/gem5/gpu-fs make`
+
