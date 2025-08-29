@@ -206,6 +206,21 @@ hidden a5_binaries = new Mapping {
   }
 }
 
+hidden  a5_gpu_binaries = new Mapping {
+  ["non-divergent-hardswish"] {
+    md5sum = "a2658b1bf4e451a971f05ff109c216a0"
+  }
+  ["divergent-hardswish"] {
+    md5sum = "7195f880f2af3696778223fd8d85f1f7"
+  }
+  ["divergent-hardswish-coalesced"] {
+    md5sum = "af17863bda7648b3dc250858ba22023c"
+  }
+  ["divergent-hardswish-non-coalesced"] {
+    md5sum = "9ebc5c5843a8367b03cf50c2a84ab41d"
+  }
+}
+
 
 resources = new Listing {
   for (_binary in binaries) {
