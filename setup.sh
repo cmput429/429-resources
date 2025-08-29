@@ -44,9 +44,10 @@ function get_pkl_binary_url() {
   VERSION=$(curl -Ls -o /dev/null -w "%{url_effective}" "https://github.com/apple/pkl/releases/latest" | awk -F '/' '{ print $NF }')
 
   # Check if we are still up to date
-  if [[ $VERSION != "0.29.0" ]]; then
-    echo -e "$(echo_yellow "Warning:") New version of PKL available: $VERSION. Please update!"
-  fi
+  # if [[ $VERSION != "0.29.0" ]]; then
+  #   echo -e "$(echo_yellow "Warning:") New version of PKL available: $VERSION. Please update!"
+  #   exit 1
+  # fi
   VERSION="0.29.0"
 
   URL="https://github.com/apple/pkl/releases/download/$VERSION"
@@ -66,7 +67,7 @@ function get_pkl_binary_url() {
     echo -e "$(echo_red "Unsupported:") Combination $OSTYPE-$ARCH is not supported by this script"
     exit 1
   fi
-  echo "$URL"
+  echo -n "$URL"
 }
 
 function write_env_vars() {
