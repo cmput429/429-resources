@@ -1,6 +1,6 @@
 resources_dir = read("prop:resources_dir")
 
-class Resource {
+open class Resource {
       category: String
       id: String
       description: String
@@ -19,6 +19,15 @@ class Resource {
       source_url: String
       resource_version: String = "1.0.0"
       example_usage: String
+}
+
+class DiskImageResource extends Resource {
+      category: String = "disk-image"
+      root_partition: String = "1"
+}
+
+class BinaryResource extends Resource {
+      category: String = "binary"
 }
 
 class Params {
@@ -164,6 +173,54 @@ hidden binaries = new Mapping {
   }
 }
 
+hidden a5_binaries = new Mapping {
+  ["scalar-naive-matmul"] {
+    name = "scalar-naive-matmul"
+    binary = "riscv-scalar-naive-matmul"
+    md5sum = "27bc225996eaa1bb4e19752e58ca31e5"
+  }
+  ["scalar-interchange-matmul"] {
+    name = "scalar-interchange-matmul"
+    binary = "riscv-scalar-interchange-matmul"
+    md5sum = "c6f2f28404ac08cfdac6f9286e61add5"
+  }
+  ["scalar-interchange-blocking-matmul"] {
+    name = "scalar-interchange-blocking-matmul"
+    binary = "riscv-scalar-interchange-blocking-matmul"
+    md5sum = "4964ca127e9f36422ef3b32b69d80b3f"
+  }
+  ["vector-naive-matmul"] {
+    name = "vectorized-naive-matmul"
+    binary = "riscv-vectorized-naive-matmul"
+    md5sum = "d66e48ba80c0009e5d9050d4deb80565"
+  }
+  ["vector-interchange-matmul"] {
+    name = "vectorized-interchange-matmul"
+    binary = "riscv-vectorized-interchange-matmul"
+    md5sum = "2e071a65a2b32afddb75ef74e03b04e7"
+  }
+  ["vector-interchange-blocking-matmul"] {
+    name = "vectorized-interchange-blocking-matmul"
+    binary = "riscv-vectorized-interchange-blocking-matmul"
+    md5sum = "60352dfa011fd6fa187c92af9cbc40c9"
+  }
+}
+
+hidden  a5_gpu_binaries = new Mapping {
+  ["non-divergent-hardswish"] {
+    md5sum = "a2658b1bf4e451a971f05ff109c216a0"
+  }
+  ["divergent-hardswish"] {
+    md5sum = "7195f880f2af3696778223fd8d85f1f7"
+  }
+  ["divergent-hardswish-coalesced"] {
+    md5sum = "af17863bda7648b3dc250858ba22023c"
+  }
+  ["divergent-hardswish-non-coalesced"] {
+    md5sum = "9ebc5c5843a8367b03cf50c2a84ab41d"
+  }
+}
+
 
 resources = new Listing {
   for (_binary in binaries) {
@@ -200,6 +257,95 @@ resources = new Listing {
       source_url = ""
       example_usage = "obtain_resource(\"riscv-spec-\(_binary.name)-run-se\")"
     }
+  }
+
+  for (_binary in a5_binaries) {
+    (BinaryResource) {
+      id = "\(_binary.name)-bin"
+      description = "A statically compiled matmul kernel in riscv"
+      architecture = "RISCV"
+      size = 1
+      tags = new Listing {"a5"}
+      md5sum = "\(_binary.md5sum)"
+      source = "\(resources_dir)/sources/a5/cpu/matmul.c"
+      url = "file://\(resources_dir)/benchmarks/429bin/riscv-\(_binary.name).riscv"
+      source_url = ""
+      example_usage = "obtain_resource(\"a5/\(_binary.name)-bin\")"
+    }
+
+    (Workload) {
+      id = "\(_binary.name)-wkld"
+      description = "A5 benchmark run configuration for RISC-V."
+      `function` = "set_se_binary_workload"
+      resources {
+        ["binary"] = (ShortResource) {
+          id = "\(_binary.name)-bin"
+          resource_version = "1.0.0"
+        }
+      }
+      architecture = "RISCV"
+      tags = new Listing {"a5" "riscv"}
+      source_url = ""
+      example_usage = "obtain_resource(\"a5/\(_binary.name)-run\")"
+    }
+  }
+
+  (Suite) {
+    id = "assignment5-vector-alu-suite"
+    description = "Suite for running assignment 5 vectorized matmul kernels"
+    architecture = "RISCV"
+    workloads = new Listing {
+      for (_binary in a5_binaries) {
+        (ShortWorkload) {
+          id = "\(_binary.name)-wkld"
+          resource_version = "1.0.0"
+          input_group = new Listing { "vALU" }
+        }
+      }     
+    }
+    tags = new Listing {"a5" "riscv"}
+    author = new Listing {"Ayrton Chilibeck"}
+    license = "WTFPL"
+    example_usage = "obtain_resource(\"assignment5-vector-alu-suite\")"
+  }
+
+  (DiskImageResource) {
+    id = "gpufs-disk-image"
+    description = "Disk image for GPUFS"
+    architecture = "X86"
+    size = 58720256000
+    tags = new Listing {"gpufs" "large"}
+    md5sum = "39b2d9c21509fc0cf48d860bb2bd5f58"
+    source = "https://github.com/gem5/gem5-resources"
+    url = "file:///home/stormblessed/Code/Architecture/gem5-resources/src/x86-ubuntu-gpu-ml/disk-image/x86-ubuntu-gpu-ml"
+    source_url = ""
+    example_usage = "obtain_resource(\"gpufs-disk-image\")"
+  }
+  (Resource) {
+    category = "kernel"
+    id = "gpufs-kernel"
+    description = "Kernel for GPUFS"
+    architecture = "X86"
+    size = 1
+    tags = new Listing {"gpufs"}
+    md5sum = "c3b9ef3102b5f73dcabb025c2d98105b"
+    source = ""
+    url = "file://\(resources_dir)/benchmarks/429bin/gpufs-kernel"
+    source_url = "https://github.com/gem5/gem5-resources"
+    example_usage = "obtain_resource(\"gpufs-kernel\")"
+  }
+  (Resource) {
+    category = "binary"
+    id = "gpufs-square"
+    description = "Simple program that squares a vector"
+    architecture = "X86"
+    size = 38688
+    tags = new Listing {"gpufs"}
+    md5sum = "dd12fe4e37b432e34af36e2c94f2e86a"
+    source = "https://github.com/gem5/gem5-resources"
+    source_url = ""
+    url = "file://\(resources_dir)/benchmarks/429bin/square.default"
+    example_usage = "obtain_resource(\"gpufs-square\")"
   }
 }
 

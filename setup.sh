@@ -19,7 +19,7 @@ function help() {
   echo -e "\t   - Create an alias to execute gem5 easier"
   echo -e "\t - Test the configuration"
   echo ""
-  echo -e "$(echo_blue "Syntax:") $(basename $0) [options]"
+  echo -e "$(echo_blue "Syntax:") $(basename "$0") [options]"
   echo_blue "Additional Options:"
   echo -e "\t\t -t      Test only"
 }
@@ -34,7 +34,7 @@ function get_script_location() {
     [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
   done
   DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  echo $DIR
+  echo "$DIR"
 }
 
 function get_pkl_binary_url() {
@@ -42,6 +42,13 @@ function get_pkl_binary_url() {
   # Get the current version of pkl by tracing the 'latest' pkl release
   #   All this does is get the version field from the url
   VERSION=$(curl -Ls -o /dev/null -w "%{url_effective}" "https://github.com/apple/pkl/releases/latest" | awk -F '/' '{ print $NF }')
+
+  # Check if we are still up to date
+  if [[ $VERSION != "0.29.0" ]]; then
+    echo -e "$(echo_yellow "Warning:") New version of PKL available: $VERSION. Please update!"
+  fi
+  VERSION="0.29.0"
+
   URL="https://github.com/apple/pkl/releases/download/$VERSION"
   ARCH=$(uname -m)
   # OSTYPE is the env var for the operating system
@@ -87,6 +94,52 @@ function test_env_vars() {
   echo "1"
 }
 
+
+function download_pkl() {
+  local PKL_URL EXPECTED_MD5
+  PKL_URL="$(get_pkl_binary_url)"
+  EXPECTED_MD5="4fd3cee7eff054c6b85642c0d8eae545"
+
+  # Check if pkl file already exists
+  if [[ -f "./pkl" ]]; then
+    echo -e "$(echo_blue "Found:") PKL file already exists, checking checksum..."
+    local CURRENT_MD5
+    CURRENT_MD5=$(md5sum ./pkl | cut -d' ' -f1)
+    
+    if [[ "$CURRENT_MD5" == "$EXPECTED_MD5" ]]; then
+      echo -e "$(echo_green "Success:") PKL checksum verified, skipping download"
+      echo
+      return
+    else
+      echo -e "$(echo_yellow "Warning:") PKL checksum mismatch, re-downloading..."
+      rm -f ./pkl
+    fi
+  fi
+
+  # Download pkl
+  echo -e "$(echo_blue "Downloading:") PKL, configuration as code (pkl-lang.org) from $PKL_URL"
+  echo
+
+  curl -L -o pkl -s "$PKL_URL"
+  chmod +x pkl
+
+  # Verify checksum for downloaded file
+  local DOWNLOADED_MD5
+  DOWNLOADED_MD5=$(md5sum ./pkl | cut -d' ' -f1)
+  
+  if [[ "$DOWNLOADED_MD5" == "$EXPECTED_MD5" ]]; then
+    echo -e "$(echo_green "Success:") Downloaded pkl. Version: $(./pkl --version)"
+    echo
+  else
+    echo -e "$(echo_red "Error:") PKL checksum verification failed!"
+    echo -e "         Expected: $EXPECTED_MD5"
+    echo -e "         Got:      $DOWNLOADED_MD5"
+    rm -f ./pkl
+    exit 1
+  fi
+}
+
+
 function install_gem5() {
   return  
 }
@@ -125,6 +178,111 @@ GIT=0
 COMPILE=0
 INSTALL_DEPS=0
 
+########### RUN FUNCTIONS ###########
+
+function configure_shell() {
+  SHELL_FILE=".$(basename "$SHELL")rc"
+  echo -e "$(echo_blue "Backing up:") $HOME$SHELL_FILE to $HOME/$SHELL_FILE.backup"
+  echo
+
+  cp "$HOME/$SHELL_FILE" "$HOME/$SHELL_FILE.backup"
+
+  echo -e "$(echo_green "Testing:") presence of env vars"
+  ENV_VARS_PRESENT="$(test_env_vars)"
+
+  if [[ "$ENV_VARS_PRESENT" == "0" ]]; then
+    echo_blue "Writing environment variables..."
+    echo -e "$(echo_red "Warning:") This will modify your $SHELL_FILE"
+    echo
+
+    write_env_vars "$HOME/.$(basename "$SHELL")rc"
+  else
+    echo
+    echo -e "$(echo_red "Error:") Some environment variables are already configured on your system"
+    echo -e "         please consult the program help to see which ones we need to configure"
+    echo -e "         and either unset them or manually configure your system."
+    echo -e "         You may consult ./setup -h for more details."
+    echo
+  fi
+}
+
+function setup_pkl_configuration() {
+  download_pkl
+
+  echo_blue "Writing the pkl files"
+  echo
+  ./pkl eval benchmarks/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/polybench.json"
+  ./pkl eval benchmarks/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/resources.json"
+  ./pkl eval benchmarks/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/sources.json"
+
+  echo_green "Remember to source your shell again!"
+}
+
+function handle_dependencies_installation() {
+  if [[ "$(hostname)" =~ ^"ug" ]]; then
+    echo -e "$(echo_red "Warning:") this is not necessary on the lab machines"  
+    echo
+  fi
+
+  sudo apt install build-essential git m4 scons zlib1g zlib1g-dev \
+    libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev \
+    python3-dev libboost-all-dev pkg-config python3-tk
+}
+
+function skip_dependencies_installation() {
+  echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i" 
+}
+
+function setup_gem5_compilation() {
+  echo "$(echo_green "Compiling:") cloning the gem5 repo"
+  echo
+  git submodule init
+  git submodule update > /dev/null
+
+  echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
+  echo "$(echo_green "Compiling:") This does not check for dependencies"
+  echo "$(echo_yellow "NOTE:") You are about to enter a tmux session. To exit:"
+  echo "$(echo_yellow "      ") - Press CTRL+B, then press D (detach and keep running)"
+  echo "$(echo_yellow "      ") - Or press CTRL+C to stop compilation, then type 'exit'"
+  echo "$(echo_blue "INFO:") Starting in 5 seconds..."
+  sleep 5
+
+  BASE_DIR=$(get_script_location)
+  tmux new -s gem5_compilation "bash -c '
+    clear
+    echo -e \"\033[0;93m========================================\033[0m\"
+    echo -e \"\033[0;93m  TMUX SESSION - GEM5 COMPILATION\033[0m\"  
+    echo -e \"\033[0;93m========================================\033[0m\"
+    echo -e \"\033[0;94mTo exit this session:\033[0m\"
+    echo -e \"\033[0;94m  • Press CTRL+B, then D (detach)\033[0m\"
+    echo -e \"\033[0;94m  • Or CTRL+C then type exit\033[0m\"
+    echo -e \"\033[0;93m========================================\033[0m\"
+    echo
+    echo -e \"\033[0;92mStarting compilation in 3 seconds...\033[0m\"
+    sleep 3
+    cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt
+    echo
+    echo -e \"\033[0;92mCompilation finished! Press CTRL+B then D to exit, or type exit\033[0m\"
+    exec \$SHELL
+  '"
+  echo
+  echo "$(echo_green "Set Up Complete!") You can close this terminal, compilation will complete in the background."
+}
+
+
+function run_main_setup() {
+  configure_shell
+  setup_pkl_configuration
+}
+
+function run_dependencies_setup() {
+  if [[ "$INSTALL_DEPS" == "1" ]]; then
+    handle_dependencies_installation
+  else
+    skip_dependencies_installation
+  fi
+}
+
 ########### MAIN ##################
 
 # echo "$(get_script_location) == $C429_RESOUCES"
@@ -146,79 +304,7 @@ done
 
 # Shell configuration
 if [[ "$TEST" == "0" ]]; then
-  SHELL_FILE=".$(basename "$SHELL")rc"
-  echo -e "$(echo_blue "Backing up:") $HOME$SHELL_FILE to $HOME/$SHELL_FILE.backup"
-  echo
-
-  cp "$HOME/$SHELL_FILE" "$HOME/$SHELL_FILE.backup"
-
-  echo -e "$(echo_green "Testing:") presence of env vars"
-  ENV_VARS_PRESENT="$(test_env_vars)"
-
-  if [[ "$ENV_VARS_PRESENT" == "0" ]]; then
-    echo_blue "Writing environment variables..."
-    echo -e "$(echo_red "Warning:") This will modify your $SHELL_FILE"
-    echo
-
-    write_env_vars "$HOME/.$(basename $SHELL)rc"
-  else
-    echo
-    echo -e "$(echo_red "Error:") Some environment variables are already configured on your system"
-    echo -e "         please consult the program help to see which ones we need to configure"
-    echo -e "         and either unset them or manually configure your system."
-    echo -e "         You may consult ./setup -h for more details."
-    echo
-  fi
-
-  # gem5 resources local configuration
-  echo -e "$(echo_blue "Downloading:") PKL, configuration as code (pkl-lang.org) from $(get_pkl_binary_url)"
-  echo
-
-  curl -L -o pkl -s "$(get_pkl_binary_url)"
-  chmod +x pkl
-  echo -e "$(echo_green "Success:") Downloaded pkl. Version: $(./pkl --version)"
-  echo
-
-  echo_blue "Writing the pkl files"
-  echo
-  ./pkl eval benchmarks/polybench.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/polybench.json"
-  ./pkl eval benchmarks/resources.pkl -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/resources.json"
-  ./pkl eval benchmarks/sources.pkl   -p resources_dir="$(get_script_location)" > "$(get_script_location)/benchmarks/sources.json"
-
-  echo -e "$(echo_red "Removing:") PKL"
-  echo
-  rm pkl
-
-  echo_green "Remember to source your shell again!"
+  run_main_setup
+  run_dependencies_setup
+  setup_gem5_compilation
 fi
-
-# Dependencies installation if required
-if [[ "$INSTALL_DEPS" == "1" ]]; then
-  if [[ "$(hostname)" =~ ^"ug" ]]; then
-    echo -e "$(echo_red "Warning:") this is not necessary on the lab machines"  
-    echo
-  fi
-
-  sudo apt install build-essential git m4 scons zlib1g zlib1g-dev \
-    libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev \
-    python3-dev libboost-all-dev pkg-config python3-tk
-
-else
-  echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i" 
-fi
-
-echo "$(echo_green "Compiling:") cloning the gem5 repo"
-echo
-git submodule init
-git submodule update > /dev/null
-
-echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
-echo "$(echo_green "Compiling:") This does not check for dependencies"
-echo "$(echo_yellow "NOTE:") Use the shortcut CTRL+B;D to exit the tmux session"
-sleep 5
-
-BASE_DIR=$(get_script_location)
-tmux new "bash -c \"cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt; exec bash\""
-echo
-echo "$(echo_green "Set Up Complete!") You can close this terminal, compilation will complete in the background."
-
