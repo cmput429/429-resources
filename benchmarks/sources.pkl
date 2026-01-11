@@ -17,13 +17,13 @@ sources {
   resources = new Source {
     url = "\(resources_dir)/benchmarks/resources.json"
   }
-  // gem5_resources = new Source {
-  //   dataSource = "gem5-vision"
-  //   database = "gem5-vision"
-  //   collection = "resources"
-  //   url = "https://api.gem5.org/api/resources"
-  //   isMongo = true
-  // }
+  gem5_resources = new Source {
+    dataSource = "gem5-vision"
+    database = "gem5-vision"
+    collection = "resources"
+    url = "https://api.gem5.org/api/resources"
+    isMongo = true
+  }
 }
 
 output {

@@ -37,6 +37,14 @@ function get_script_location() {
   echo "$DIR"
 }
 
+function get_gem5_install_path() {
+  # TODO: Uglyyyy
+  read \
+    -p "$(echo_green Installation:) Where would you like to install gem5? to install gem5? (Default: $(get_script_location)/gem5)" \
+    -r GEM5_INSTALL_PATH
+  echo "Installing in: ${GEM5_INSTALL_PATH:-$(get_script_location)/gem5}"
+}
+
 function get_pkl_binary_url() {
   local URL ARCH VERSION
   # Get the current version of pkl by tracing the 'latest' pkl release
@@ -75,9 +83,7 @@ function write_env_vars() {
     echo -e "\n";
     echo "# CMPUT 429 Environment variables";
     echo "export C429_RESOURCES=$( get_script_location )";
-    echo -e "export GEM_PATH=\$C429_RESOURCES/gem5";
-    echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs";
-    echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests";
+    echo -e "export GEM_PATH=$GEM5_INSTALL_PATH";
     echo -e "export GEM5_CONFIG=\$C429_RESOURCES/benchmarks/sources.json";
     echo -e "export GEM5_RESOURCE_DIR=/local/scratch/.gem5-resources";
     echo -e "export CC=gcc-11";
@@ -106,7 +112,7 @@ function download_pkl() {
     echo -e "$(echo_blue "Found:") PKL file already exists, checking checksum..."
     local CURRENT_MD5
     CURRENT_MD5=$(md5sum ./pkl | cut -d' ' -f1)
-    
+
     if [[ "$CURRENT_MD5" == "$EXPECTED_MD5" ]]; then
       echo -e "$(echo_green "Success:") PKL checksum verified, skipping download"
       echo
@@ -127,7 +133,7 @@ function download_pkl() {
   # Verify checksum for downloaded file
   local DOWNLOADED_MD5
   DOWNLOADED_MD5=$(md5sum ./pkl | cut -d' ' -f1)
-  
+
   if [[ "$DOWNLOADED_MD5" == "$EXPECTED_MD5" ]]; then
     echo -e "$(echo_green "Success:") Downloaded pkl. Version: $(./pkl --version)"
     echo
@@ -142,7 +148,7 @@ function download_pkl() {
 
 
 function install_gem5() {
-  return  
+  return
 }
 
 ########## Prettification ###########
@@ -178,15 +184,17 @@ TEST=0
 GIT=0
 COMPILE=0
 INSTALL_DEPS=0
+GEM5_INSTALL_PATH=$( get_gem5_install_path )
+GEM5_BRANCH="v25.0.0.0"
 
 ########### RUN FUNCTIONS ###########
 
 function configure_shell() {
   SHELL_FILE=".$(basename "$SHELL")rc"
-  echo -e "$(echo_blue "Backing up:") $HOME$SHELL_FILE to $HOME/$SHELL_FILE.backup"
+  echo -e "$(echo_blue "Backing up:") $HOME$SHELL_FILE to $HOME/$SHELL_FILE.bak"
   echo
 
-  cp "$HOME/$SHELL_FILE" "$HOME/$SHELL_FILE.backup"
+  cp "$HOME/$SHELL_FILE" "$HOME/$SHELL_FILE.bak"
 
   echo -e "$(echo_green "Testing:") presence of env vars"
   ENV_VARS_PRESENT="$(test_env_vars)"
@@ -221,7 +229,7 @@ function setup_pkl_configuration() {
 
 function handle_dependencies_installation() {
   if [[ "$(hostname)" =~ ^"ug" ]]; then
-    echo -e "$(echo_red "Warning:") this is not necessary on the lab machines"  
+    echo -e "$(echo_red "Warning:") this is not necessary on the lab machines"
     echo
   fi
 
@@ -231,14 +239,14 @@ function handle_dependencies_installation() {
 }
 
 function skip_dependencies_installation() {
-  echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i" 
+  echo_green "Skipping deps:" " If you require installation of dependencies, rerun with -i"
 }
 
 function setup_gem5_compilation() {
   echo "$(echo_green "Compiling:") cloning the gem5 repo"
   echo
-  git submodule init
-  git submodule update > /dev/null
+  git clone https://github.com/gem5/gem5.git --depth 1 --branch "$GEM5_BRANCH" \
+    "$GEM5_INSTALL_PATH"
 
   echo "$(echo_green "Compiling:") Opening a tmux session to compile gem5"
   echo "$(echo_green "Compiling:") This does not check for dependencies"
@@ -252,7 +260,7 @@ function setup_gem5_compilation() {
   tmux new -s gem5_compilation "bash -c '
     clear
     echo -e \"\033[0;93m========================================\033[0m\"
-    echo -e \"\033[0;93m  TMUX SESSION - GEM5 COMPILATION\033[0m\"  
+    echo -e \"\033[0;93m  TMUX SESSION - GEM5 COMPILATION\033[0m\"
     echo -e \"\033[0;93m========================================\033[0m\"
     echo -e \"\033[0;94mTo exit this session:\033[0m\"
     echo -e \"\033[0;94m  • Press CTRL+B, then D (detach)\033[0m\"
@@ -261,7 +269,7 @@ function setup_gem5_compilation() {
     echo
     echo -e \"\033[0;92mStarting compilation in 3 seconds...\033[0m\"
     sleep 3
-    cd \"$BASE_DIR/gem5\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt
+    cd \"$GEM5_INSTALL_PATH\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt
     echo
     echo -e \"\033[0;92mCompilation finished! Press CTRL+B then D to exit, or type exit\033[0m\"
     exec \$SHELL
@@ -296,9 +304,9 @@ while getopts ":htgci" option; do
     t) TEST=1 ;;
     c) COMPILE=1 ;;
     i) INSTALL_DEPS=1 ;;
-    *) 
+    *)
       echo_red "Invalid usage: " "available flags listed below"
-      help 
+      help
       exit 1 ;;
   esac
 done
