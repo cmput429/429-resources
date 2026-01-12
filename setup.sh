@@ -40,9 +40,9 @@ function get_script_location() {
 function get_gem5_install_path() {
   # TODO: Uglyyyy
   read \
-    -p "$(echo_green Installation:) Where would you like to install gem5? to install gem5? (Default: $(get_script_location)/gem5)" \
+    -p "$(echo_green Installation:) Where would you like to install gem5? to install gem5? (Default: $(get_script_location)/gem5) " \
     -r GEM5_INSTALL_PATH
-  echo "Installing in: ${GEM5_INSTALL_PATH:-$(get_script_location)/gem5}"
+  echo "${GEM5_INSTALL_PATH:-$(get_script_location)/gem5}"
 }
 
 function get_pkl_binary_url() {
@@ -85,10 +85,10 @@ function write_env_vars() {
     echo "export C429_RESOURCES=$( get_script_location )";
     echo -e "export GEM_PATH=$GEM5_INSTALL_PATH";
     echo -e "export GEM5_CONFIG=\$C429_RESOURCES/benchmarks/sources.json";
-    echo -e "export GEM5_RESOURCE_DIR=/local/scratch/.gem5-resources";
+    echo -e "export GEM5_RESOURCE_DIR=\$GEM_PATH/.gem5-resources";
     echo -e "export CC=gcc-11";
     echo -e "export CXX=g++-11";
-    echo -e "alias gem5=\$GEM_PATH/build/RISCV/gem5.opt";
+    echo -e "alias gem5=\$GEM_PATH/build/ALL/gem5.opt";
   } >> "$1"
 }
 
@@ -269,7 +269,7 @@ function setup_gem5_compilation() {
     echo
     echo -e \"\033[0;92mStarting compilation in 3 seconds...\033[0m\"
     sleep 3
-    cd \"$GEM5_INSTALL_PATH\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true nice -n 13 scons build/ALL/gem5.opt
+    cd \"$GEM5_INSTALL_PATH\" && PYTHON_CONFIG=\"$BASE_DIR/python3.13-config\" M5_OVERRIDE_PY_SOURCE=true CC=gcc-11 CXX=g++-11 nice -n 13 scons build/ALL/gem5.opt
     echo
     echo -e \"\033[0;92mCompilation finished! Press CTRL+B then D to exit, or type exit\033[0m\"
     exec \$SHELL
