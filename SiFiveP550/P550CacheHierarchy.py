@@ -68,10 +68,9 @@ class P550CacheHierarchy(
         """
         Creates the self-contained cache hierarchy for use in the system.
 
-        This function creates an instance of the L1 and L2 caches for
-        each core in the processor, connecting them together with the
-        L2XBar, then creates an instance of the L3 cache, connecting
-        all L2 caches to the L3 through the L3XBar. Finally, it connects
+        This function creates an instance of the L1 caches for
+        each core in the processor, then creates an instance of the L2 cache, connecting
+        all L1 caches to the L2 through the L2XBar. Finally, it connects
         the entire cache hierarchy to the CPU by the system port
         """
 
