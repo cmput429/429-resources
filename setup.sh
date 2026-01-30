@@ -84,8 +84,8 @@ function write_env_vars() {
     echo "# CMPUT 429 Environment variables";
     echo "export C429_RESOURCES=$( get_script_location )";
     echo -e "export GEM_PATH=$GEM5_INSTALL_PATH";
-    echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs",
-    echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests",
+    echo -e "export GEM_CONFIGS=\$C429_RESOURCES/gem5/configs";
+    echo -e "export GEM_TESTS=\$C429_RESOURCES/gem5/tests";
     echo -e "export GEM5_CONFIG=\$C429_RESOURCES/benchmarks/sources.json";
     echo -e "export GEM5_RESOURCE_DIR=\$GEM_PATH/.gem5-resources";
     echo -e "export CC=gcc-11";
